@@ -4,6 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\GeneralSetting;
+use App\Models\EmailSetting;
+use App\Models\DocumentNumbering;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Company extends Model
 {
@@ -36,5 +41,20 @@ class Company extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    public function generalSetting(): HasOne
+    {
+        return $this->hasOne(GeneralSetting::class);
+    }
+
+    public function emailSetting(): HasOne
+    {
+        return $this->hasOne(EmailSetting::class);
+    }
+
+    public function documentNumberings(): HasMany
+    {
+        return $this->hasMany(DocumentNumbering::class);
     }
 }

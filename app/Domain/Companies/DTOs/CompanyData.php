@@ -1,66 +1,111 @@
 <?php
 
-namespace App\Domain\Outlets\DTOs;
+namespace App\Domain\Companies\DTOs;
 
-class OutletData
+class CompanyData
 {
     public function __construct(
-        public string $outlet_code,
-        public string $outlet_name,
-        public string $outlet_type,
-        public bool $is_active = true,
-        public bool $is_camera_enabled = true,
-        public bool $is_scanner_enabled = true,
-        public ?int $scan_limit = 1,
-        public ?string $remark = null,
-    ) {}
+        public string $code,
+        public string $name,
+        public ?string $logo = null,
 
-    public static function fromArray(array $a): self
+        public ?string $email = null,
+        public ?string $phone = null,
+        public ?string $website = null,
+
+        public ?string $taxNumber = null,
+
+        public ?string $address = null,
+        public ?string $city = null,
+        public ?string $province = null,
+        public ?string $postalCode = null,
+
+        public string $currency = 'IDR',
+        public string $timezone = 'Asia/Jakarta',
+        public string $dateFormat = 'd/m/Y',
+
+        public ?string $invoiceHeader = null,
+        public ?string $invoiceFooter = null,
+
+        public ?string $receiptHeader = null,
+        public ?string $receiptFooter = null,
+
+        public bool $isActive = true,
+    ) {
+    }
+
+    public static function fromArray(array $data): self
     {
-        $scanLimit = $a['scan_limit'] ?? null;
-
         return new self(
-            outlet_code: trim((string) ($a['outlet_code'] ?? '')),
-            outlet_name: trim((string) ($a['outlet_name'] ?? '')),
-            outlet_type: trim((string) ($a['outlet_type'] ?? '')),
+            code: trim($data['code']),
+            name: trim($data['name']),
+            logo: self::nullableString($data['logo'] ?? null),
 
-            is_active: filter_var(
-                $a['is_active'] ?? true,
-                FILTER_VALIDATE_BOOLEAN
-            ),
+            email: self::nullableString($data['email'] ?? null),
+            phone: self::nullableString($data['phone'] ?? null),
+            website: self::nullableString($data['website'] ?? null),
 
-            is_camera_enabled: filter_var(
-                $a['is_camera_enabled'] ?? true,
-                FILTER_VALIDATE_BOOLEAN
-            ),
+            taxNumber: self::nullableString($data['tax_number'] ?? null),
 
-            is_scanner_enabled: filter_var(
-                $a['is_scanner_enabled'] ?? true,
-                FILTER_VALIDATE_BOOLEAN
-            ),
+            address: self::nullableString($data['address'] ?? null),
+            city: self::nullableString($data['city'] ?? null),
+            province: self::nullableString($data['province'] ?? null),
+            postalCode: self::nullableString($data['postal_code'] ?? null),
 
-            scan_limit: (
-                $scanLimit === null ||
-                $scanLimit === ''
-            )
-                ? null
-                : max(1, (int) $scanLimit),
+            currency: trim($data['currency'] ?? 'IDR'),
+            timezone: trim($data['timezone'] ?? 'Asia/Jakarta'),
+            dateFormat: trim($data['date_format'] ?? 'd/m/Y'),
 
-            remark: trim((string) ($a['remark'] ?? '')),
+            invoiceHeader: self::nullableString($data['invoice_header'] ?? null),
+            invoiceFooter: self::nullableString($data['invoice_footer'] ?? null),
+
+            receiptHeader: self::nullableString($data['receipt_header'] ?? null),
+            receiptFooter: self::nullableString($data['receipt_footer'] ?? null),
+
+            isActive: (bool) ($data['is_active'] ?? true),
         );
     }
 
     public function toArray(): array
     {
         return [
-            'outlet_code' => $this->outlet_code,
-            'outlet_name' => $this->outlet_name,
-            'outlet_type' => $this->outlet_type,
-            'is_active' => $this->is_active,
-            'is_camera_enabled' => $this->is_camera_enabled,
-            'is_scanner_enabled' => $this->is_scanner_enabled,
-            'scan_limit' => $this->scan_limit,
-            'remark' => $this->remark,
+            'code' => $this->code,
+            'name' => $this->name,
+            'logo' => $this->logo,
+
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'website' => $this->website,
+
+            'tax_number' => $this->taxNumber,
+
+            'address' => $this->address,
+            'city' => $this->city,
+            'province' => $this->province,
+            'postal_code' => $this->postalCode,
+
+            'currency' => $this->currency,
+            'timezone' => $this->timezone,
+            'date_format' => $this->dateFormat,
+
+            'invoice_header' => $this->invoiceHeader,
+            'invoice_footer' => $this->invoiceFooter,
+
+            'receipt_header' => $this->receiptHeader,
+            'receipt_footer' => $this->receiptFooter,
+
+            'is_active' => $this->isActive,
         ];
+    }
+
+    private static function nullableString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $value = trim((string) $value);
+
+        return $value === '' ? null : $value;
     }
 }

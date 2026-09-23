@@ -1,10 +1,26 @@
 <nav class="sidebar">
+    @php
+        $activeCompany = app(\App\Domain\Companies\Services\CompanyContext::class)->get();
+    @endphp
+
     <div class="sidebar-header">
-        <a href="{{ route('super.dashboard') }}" class="sidebar-brand">
-            QR<span> Scan</span>
+        <a href="{{ route('super.dashboard') }}" class="sidebar-brand company-brand">
+
+            @if ($activeCompany?->logo)
+                <img src="{{ asset('storage/' . $activeCompany->logo) }}" alt="{{ $activeCompany->name }}"
+                    class="company-logo">
+            @endif
+
+            <span class="company-name">
+                {{ $activeCompany?->name ?? 'ERP System' }}
+            </span>
+
         </a>
+
         <div class="sidebar-toggler not-active">
-            <span></span><span></span><span></span>
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
     </div>
 
@@ -96,15 +112,91 @@
 
 
             {{-- ================= MASTER ================= --}}
-            @canany(['outlets.view', 'ticket-qrcodes.view'])
+            @canany(['outlets.view', 'ticket-qrcodes.view', 'company.view'])
                 <li class="nav-item nav-category">MASTER</li>
             @endcanany
 
 
+
+            @can('categories.view')
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#menu-categories" role="button"
+                        aria-expanded="{{ request()->routeIs('super.categories.*') ? 'true' : 'false' }}"
+                        aria-controls="menu-categories">
+
+                        <i class="link-icon" data-feather="tag"></i>
+                        <span class="link-title">Kategori</span>
+                        <i class="link-arrow" data-feather="chevron-down"></i>
+                    </a>
+
+                    <div class="collapse {{ request()->routeIs('super.categories.*') ? 'show' : '' }}"
+                        id="menu-categories">
+
+                        <ul class="nav sub-menu">
+                            <li class="nav-item">
+                                <a href="{{ route('super.categories.index') }}"
+                                    class="nav-link {{ request()->routeIs('super.categories.index') ? 'active' : '' }}">
+                                    Show
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            @endcan
+
+
+
+            @can('units.view')
+                <li class="nav-item">
+
+                    <a class="nav-link" data-bs-toggle="collapse" href="#menu-units" role="button"
+                        aria-expanded="{{ request()->routeIs('super.units.*') ? 'true' : 'false' }}"
+                        aria-controls="menu-units">
+
+                        <i class="link-icon" data-feather="box"></i>
+
+                        <span class="link-title">
+                            Satuan
+                        </span>
+
+                        <i class="link-arrow" data-feather="chevron-down"></i>
+
+                    </a>
+
+
+                    <div class="collapse {{ request()->routeIs('super.units.*') ? 'show' : '' }}" id="menu-units">
+
+                        <ul class="nav sub-menu">
+
+                            <li class="nav-item">
+
+                                <a href="{{ route('super.units.index') }}"
+                                    class="nav-link {{ request()->routeIs('super.units.index') ? 'active' : '' }}">
+
+                                    Show
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+            @endcan
+
+
+
+
+
+
+
+
             @can('outlets.view')
                 <li class="nav-item">
-                    <a class="nav-link" data-bs-toggle="collapse" href="#menu-outlets" role="button" aria-expanded="false"
-                        aria-controls="menu-outlets">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#menu-outlets" role="button"
+                        aria-expanded="false" aria-controls="menu-outlets">
                         <i class="link-icon" data-feather="hard-drive"></i>
                         <span class="link-title">Outlets</span>
                         <i class="link-arrow" data-feather="chevron-down"></i>
@@ -294,6 +386,103 @@
 
 
 
+
+
+            {{-- ================= SETTINGS ================= --}}
+            @canany(['company.view'])
+                <li class="nav-item nav-category">
+                    SETTINGS
+                </li>
+            @endcanany
+
+
+
+            {{-- Company --}}
+            @can('company.view')
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#menu-companies" role="button"
+                        aria-expanded="{{ request()->routeIs('super.companies.*') ? 'true' : 'false' }}"
+                        aria-controls="menu-companies">
+
+                        <i class="link-icon" data-feather="briefcase"></i>
+
+                        <span class="link-title">Company</span>
+
+                        <i class="link-arrow" data-feather="chevron-down"></i>
+                    </a>
+
+                    <div class="collapse {{ request()->routeIs('super.companies.*') ? 'show' : '' }}"
+                        id="menu-companies">
+
+                        <ul class="nav sub-menu">
+
+                            <li class="nav-item">
+                                <a href="{{ route('super.companies.index') }}"
+                                    class="nav-link {{ request()->routeIs('super.companies.index') ? 'active' : '' }}">
+                                    Show
+                                </a>
+                            </li>
+
+                        </ul>
+                    </div>
+                </li>
+            @endcan
+
+
+            @can('general-settings.view')
+                <li class="nav-item">
+
+                    <a href="{{ route('super.settings.general') }}"
+                        class="nav-link {{ request()->routeIs('super.settings.general') ? 'active' : '' }}">
+
+                        <i class="link-icon" data-feather="settings"></i>
+
+                        <span class="link-title">
+                            General Setting
+                        </span>
+
+                    </a>
+
+                </li>
+            @endcan
+
+            @can('email-settings.view')
+                <li class="nav-item">
+
+                    <a href="{{ route('super.settings.email') }}"
+                        class="nav-link {{ request()->routeIs('super.settings.email') ? 'active' : '' }}">
+
+                        <i class="link-icon" data-feather="mail"></i>
+
+                        <span class="link-title">
+                            Email Setting
+                        </span>
+
+                    </a>
+
+                </li>
+            @endcan
+
+
+            @can('document-numbering.view')
+                <li class="nav-item">
+                    <a href="{{ route('super.settings.document-numbering') }}"
+                        class="nav-link {{ request()->routeIs('super.settings.document-numbering') ? 'active' : '' }}">
+                        <i class="link-icon" data-feather="hash"></i>
+                        <span class="link-title">
+                            Document Numbering
+                        </span>
+                    </a>
+                </li>
+            @endcan
+
+
+
+
+
+
+
+
             {{-- ================= SYSTEM ================= --}}
             @can('audit-logs.view')
                 <li class="nav-item nav-category">
@@ -316,6 +505,13 @@
 
                 </li>
             @endcan
+
+
+
+
+
+
+
 
 
 

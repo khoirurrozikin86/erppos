@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Category;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -14,21 +15,36 @@ class CategoryUpdateRequest extends FormRequest
 
     public function rules(): array
     {
+        $category = $this->route('category');
+
+        $categoryId = $category instanceof Category
+            ? $category->id
+            : $category;
+
         return [
+            'code' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('categories', 'code')
+                    ->ignore($categoryId),
+            ],
+
             'name' => [
                 'required',
                 'string',
                 'max:100',
-                Rule::unique('categories', 'name')
-                    ->ignore($this->route('category')),
             ],
 
-            'description' => ['nullable', 'string'],
-        ];
-    }
+            'description' => [
+                'nullable',
+                'string',
+            ],
 
-    public function sanitized(): array
-    {
-        return $this->validated();
+            'is_active' => [
+                'required',
+                'boolean',
+            ],
+        ];
     }
 }

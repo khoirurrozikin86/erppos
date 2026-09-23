@@ -1,46 +1,41 @@
 <?php
 
-namespace App\Domain\Outlets\Actions;
+namespace App\Domain\Companies\Actions;
 
 use App\Domain\Audit\Services\AuditLogService;
-use App\Domain\Outlets\DTOs\OutletData;
-use App\Models\Outlet;
+use App\Domain\Companies\DTOs\CompanyData;
+use App\Models\Company;
 use Illuminate\Support\Facades\DB;
 
-class UpdateOutletAction
+class UpdateCompanyAction
 {
     public function __construct(
-        protected AuditLogService $auditLog,
+        protected AuditLogService $auditLog
     ) {}
 
     public function __invoke(
-        Outlet $outlet,
-        OutletData $data
-    ): Outlet {
-        return DB::transaction(function () use ($outlet, $data) {
+        Company $company,
+        CompanyData $data
+    ): Company {
+        return DB::transaction(function () use ($company, $data) {
 
-            // Data sebelum perubahan
-            $oldValues = $outlet->getOriginal();
+            $old = $company->getOriginal();
 
-            // Update outlet
-            $outlet->update(
+            $company->update(
                 $data->toArray()
             );
 
-            // Refresh data setelah perubahan
-            $outlet->refresh();
+            $company->refresh();
 
-            // Audit Log
             $this->auditLog->log(
                 action: 'UPDATE',
-                module: 'OUTLET',
-                description: "Mengubah outlet {$outlet->name}",
-                model: $outlet,
-                oldValues: $oldValues,
-                newValues: $outlet->toArray(),
+                module: 'COMPANY',
+                description: "Mengubah company {$company->name}",
+                oldValues: $old,
+                newValues: $company->toArray(),
             );
 
-            return $outlet;
+            return $company;
         });
     }
 }

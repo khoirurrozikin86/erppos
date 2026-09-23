@@ -30,7 +30,13 @@ class UsersAndPermissionsSeeder extends Seeder
             'ticket-qrcode' => ['view', 'create', 'update', 'delete'],
             'user-outlets' => ['view', 'create', 'update', 'delete'],
             'scan-records' => ['view', 'create', 'update', 'delete'],
-            'audit-log' => ['view', 'create', 'update', 'delete'],
+            'audit-logs' => ['view', 'create', 'update', 'delete'],
+            'company' => ['view', 'create', 'update', 'delete'],
+            'general-settings' => ['view', 'update'],
+            'email-settings' => ['view', 'update'],
+            'document-numbering' => ['view', 'create', 'update', 'delete'],
+            'categories' => ['view', 'create', 'update', 'delete'],
+            'units' => ['view', 'create', 'update', 'delete'],
 
 
 
@@ -61,7 +67,17 @@ class UsersAndPermissionsSeeder extends Seeder
             'scan-records.create',
             'scan-records.update',
             'scan-records.delete',
-            'audit-log.view',
+            'audit-logs.view',
+            'company.view',
+            'company.create',
+            'company.update',
+            'company.delete',
+            'general-settings.view',
+            'email-settings.view',
+            'document-numbering.view',
+            'categories.view',
+            'units.view',
+
         ]);
 
         // 👨‍💼 ADMIN: CRUD penuh semua modul utama
@@ -103,7 +119,37 @@ class UsersAndPermissionsSeeder extends Seeder
             'scan-records.delete',
 
 
-            'audit-log.view',
+            'audit-logs.view',
+
+            'company.view',
+            'company.create',
+            'company.update',
+            'company.delete',
+
+            'general-settings.view',
+            'general-settings.update',
+
+            'email-settings.view',
+            'email-settings.update',
+
+
+            'document-numbering.view',
+            'document-numbering.create',
+            'document-numbering.update',
+            'document-numbering.delete',
+
+            'categories.view',
+            'categories.create',
+            'categories.update',
+            'categories.delete',
+
+            'units.view',
+            'units.create',
+            'units.update',
+            'units.delete',
+
+
+
 
 
         ]);

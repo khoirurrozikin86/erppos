@@ -9,6 +9,12 @@ use App\Http\Controllers\Admin\{
     UserOutletController,
     ScanController,
     AuditLogController,
+    CompanyController,
+    GeneralSettingController,
+    EmailSettingController,
+    DocumentNumberingController,
+    CategoryController,
+    UnitController
 };
 
 Route::middleware(['auth'])
@@ -316,4 +322,164 @@ Route::middleware(['auth'])
                     ->middleware('permission:audit-logs.view')
                     ->name('show');
             });
+
+
+
+
+
+
+
+        // COMPANY
+        Route::prefix('companies')
+            ->name('companies.')
+            ->group(function () {
+
+                // VIEW
+                Route::middleware('permission:company.view')
+                    ->get('/', [CompanyController::class, 'index'])
+                    ->name('index');
+
+                Route::middleware('permission:company.view')
+                    ->get('/dt', [CompanyController::class, 'dt'])
+                    ->name('dt');
+
+                // CREATE
+                Route::middleware('permission:company.create')
+                    ->post('/', [CompanyController::class, 'store'])
+                    ->name('store');
+
+                // UPDATE
+                Route::middleware('permission:company.update')
+                    ->put('/{company}', [CompanyController::class, 'update'])
+                    ->name('update');
+
+                // DELETE
+                Route::middleware('permission:company.delete')
+                    ->delete('/{company}', [CompanyController::class, 'destroy'])
+                    ->name('destroy');
+            });
+
+
+        // SETTINGS
+
+        Route::prefix('settings')->name('settings.')->group(function () {
+
+            Route::middleware('permission:general-settings.view')
+                ->get('/general', [GeneralSettingController::class, 'index'])
+                ->name('general');
+
+            Route::middleware('permission:general-settings.update')
+                ->put('/general', [GeneralSettingController::class, 'update'])
+                ->name('general.update');
+        });
+
+
+
+        Route::prefix('settings')->name('settings.')->group(function () {
+
+            // General
+            Route::middleware('permission:general-settings.view')
+                ->get('/general', [GeneralSettingController::class, 'index'])
+                ->name('general');
+
+            Route::middleware('permission:general-settings.update')
+                ->put('/general', [GeneralSettingController::class, 'update'])
+                ->name('general.update');
+
+
+            // Email
+            Route::middleware('permission:email-settings.view')
+                ->get('/email', [EmailSettingController::class, 'index'])
+                ->name('email');
+
+            Route::middleware('permission:email-settings.update')
+                ->put('/email', [EmailSettingController::class, 'update'])
+                ->name('email.update');
+
+            Route::middleware('permission:email-settings.update')
+                ->post('/email/test', [EmailSettingController::class, 'test'])
+                ->name('email.test');
+
+
+
+            // Document Numbering
+            Route::middleware('permission:document-numbering.view')
+                ->get('/document-numbering', [
+                    DocumentNumberingController::class,
+                    'index'
+                ])
+                ->name('document-numbering');
+
+            Route::middleware('permission:document-numbering.update')
+                ->put('/document-numbering/{numbering}', [
+                    DocumentNumberingController::class,
+                    'update'
+                ])
+                ->name('document-numbering.update');
+        });
+
+
+        Route::prefix('categories')
+            ->name('categories.')
+            ->group(function () {
+
+                Route::middleware('permission:categories.view')
+                    ->get('/', [
+                        CategoryController::class,
+                        'index',
+                    ])
+                    ->name('index');
+
+                Route::middleware('permission:categories.view')
+                    ->get('/dt', [
+                        CategoryController::class,
+                        'dt',
+                    ])
+                    ->name('dt');
+
+                Route::middleware('permission:categories.create')
+                    ->post('/', [
+                        CategoryController::class,
+                        'store',
+                    ])
+                    ->name('store');
+
+                Route::middleware('permission:categories.update')
+                    ->put('/{category}', [
+                        CategoryController::class,
+                        'update',
+                    ])
+                    ->name('update');
+
+                Route::middleware('permission:categories.delete')
+                    ->delete('/{category}', [
+                        CategoryController::class,
+                        'destroy',
+                    ])
+                    ->name('destroy');
+            });
+
+
+        Route::prefix('units')->name('units.')->group(function () {
+
+            Route::middleware('permission:units.view')
+                ->get('/', [UnitController::class, 'index'])
+                ->name('index');
+
+            Route::middleware('permission:units.view')
+                ->get('/dt', [UnitController::class, 'dt'])
+                ->name('dt');
+
+            Route::middleware('permission:units.create')
+                ->post('/', [UnitController::class, 'store'])
+                ->name('store');
+
+            Route::middleware('permission:units.update')
+                ->put('/{unit}', [UnitController::class, 'update'])
+                ->name('update');
+
+            Route::middleware('permission:units.delete')
+                ->delete('/{unit}', [UnitController::class, 'destroy'])
+                ->name('destroy');
+        });
     });

@@ -1,27 +1,39 @@
 <?php
 
-namespace App\Domain\Outlets\Queries;
+namespace App\Domain\Companies\Queries;
 
-use App\Models\Outlet;
+use App\Models\Company;
 use Illuminate\Database\Eloquent\Builder;
 
-class OutletTableQuery
+class CompanyTableQuery
 {
     public function builder(): Builder
     {
-        return Outlet::query()
+        return Company::query()
             ->select([
                 'id',
-                'outlet_code',
-                'outlet_name',
-                'outlet_type',
+                'code',
+                'name',
+                'logo',
+                'email',
+                'phone',
+                'website',
+                'tax_number',
+                'address',
+                'city',
+                'province',
+                'postal_code',
+                'currency',
+                'timezone',
+                'date_format',
+                'invoice_header',
+                'invoice_footer',
+                'receipt_header',
+                'receipt_footer',
                 'is_active',
-                'is_camera_enabled',
-                'is_scanner_enabled',
-                'scan_limit',
-                'remark',
                 'created_at',
                 'updated_at',
-            ])->orderByDesc('created_at');
+            ])
+            ->orderByDesc('created_at');
     }
 }

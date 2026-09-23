@@ -1,35 +1,38 @@
 <?php
 
-namespace App\Domain\Outlets\Actions;
+namespace App\Domain\Companies\Actions;
 
+use App\Models\Company;
 use App\Domain\Audit\Services\AuditLogService;
-use App\Models\Outlet;
 use Illuminate\Support\Facades\DB;
 
-class DeleteOutletAction
+class DeleteCompanyAction
 {
     public function __construct(
-        protected AuditLogService $auditLog,
+        private AuditLogService $auditLog,
     ) {}
 
-    public function __invoke(Outlet $outlet): void
+    public function __invoke(Company $company): bool
     {
-        DB::transaction(function () use ($outlet) {
+        return DB::transaction(function () use ($company) {
 
-            // Simpan data sebelum dihapus
-            $oldValues = $outlet->toArray();
+            $oldValues = $company->getOriginal();
 
-            // Hapus outlet
-            $outlet->delete();
+            $companyName = $company->name;
 
-            // Audit Log
-            $this->auditLog->log(
-                action: 'DELETE',
-                module: 'OUTLET',
-                description: "Menghapus outlet {$outlet->name}",
-                model: $outlet,
-                oldValues: $oldValues,
-            );
+            $deleted = $company->delete();
+
+            if ($deleted) {
+                $this->auditLog->log(
+                    action: 'DELETE',
+                    module: 'COMPANY',
+                    description: "Deleted company: {$companyName}",
+                    model: $company,
+                    oldValues: $oldValues,
+                );
+            }
+
+            return $deleted;
         });
     }
 }

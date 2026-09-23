@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Spatie\Permission\Middleware\{RoleMiddleware, PermissionMiddleware, RoleOrPermissionMiddleware};
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\SetCompanyContext;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -17,6 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,
         ]);
+
+
+        // Set active company untuk seluruh request web
+        $middleware->web(append: [
+            SetCompanyContext::class,
+        ]);
+
 
 
         // User yang sudah login tidak boleh kembali ke /login

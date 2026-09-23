@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class CategoryStoreRequest extends FormRequest
 {
@@ -14,13 +15,28 @@ class CategoryStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:100', 'unique:categories,name'],
-            'description' => ['nullable', 'string'],
-        ];
-    }
+            'code' => [
+                'required',
+                'string',
+                'max:50',
+                'unique:categories,code',
+            ],
 
-    public function sanitized(): array
-    {
-        return $this->validated();
+            'name' => [
+                'required',
+                'string',
+                'max:100',
+            ],
+
+            'description' => [
+                'nullable',
+                'string',
+            ],
+
+            'is_active' => [
+                'required',
+                'boolean',
+            ],
+        ];
     }
 }

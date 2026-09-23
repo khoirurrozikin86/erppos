@@ -1,43 +1,40 @@
 <?php
 
-namespace App\Domain\Outlets\Services;
+namespace App\Domain\Companies\Services;
 
-use App\Domain\Outlets\Actions\{
-    CreateOutletAction,
-    UpdateOutletAction,
-    DeleteOutletAction
-};
+use App\Domain\Companies\Actions\CreateCompanyAction;
+use App\Domain\Companies\Actions\UpdateCompanyAction;
+use App\Domain\Companies\Actions\DeleteCompanyAction;
+use App\Domain\Companies\DTOs\CompanyData;
+use App\Models\Company;
 
-use App\Domain\Outlets\DTOs\OutletData;
-use App\Models\Outlet;
-
-class OutletService
+class CompanyService
 {
     public function __construct(
-        protected CreateOutletAction $create,
-        protected UpdateOutletAction $update,
-        protected DeleteOutletAction $delete,
+        protected CreateCompanyAction $create,
+        protected UpdateCompanyAction $update,
+        protected DeleteCompanyAction $delete,
     ) {}
 
-    public function create(array $payload): Outlet
+    public function create(array $payload): Company
     {
         return ($this->create)(
-            OutletData::fromArray($payload)
+            CompanyData::fromArray($payload)
         );
     }
 
     public function update(
-        Outlet $outlet,
+        Company $company,
         array $payload
-    ): Outlet {
+    ): Company {
         return ($this->update)(
-            $outlet,
-            OutletData::fromArray($payload)
+            $company,
+            CompanyData::fromArray($payload)
         );
     }
 
-    public function delete(Outlet $outlet): void
+    public function delete(Company $company): void
     {
-        ($this->delete)($outlet);
+        ($this->delete)($company);
     }
 }

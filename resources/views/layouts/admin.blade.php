@@ -263,6 +263,56 @@
 
             background: #86efac;
         }
+
+
+
+
+
+
+
+        .sidebar-header {
+            display: flex !important;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px 0 20px;
+        }
+
+        .company-brand {
+            display: flex !important;
+            align-items: center;
+            gap: 9px;
+            min-width: 0;
+            width: calc(100% - 35px);
+            text-decoration: none;
+        }
+
+        .company-logo {
+            width: 32px !important;
+            height: 32px !important;
+            min-width: 32px;
+            object-fit: contain;
+            margin: 0 !important;
+        }
+
+        .company-name {
+            display: block;
+            min-width: 0;
+            max-width: 125px;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+
+            font-size: 15px !important;
+            font-weight: 500 !important;
+            line-height: 1.2 !important;
+            color: #53627a !important;
+        }
+
+        .sidebar-toggler {
+            flex-shrink: 0;
+            width: 24px;
+            margin-left: 5px;
+        }
     </style>
 
 </head>
