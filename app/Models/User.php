@@ -1,0 +1,60 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+// ⬇️ penting
+use Spatie\Permission\Traits\HasRoles;
+
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+class User extends Authenticatable
+{
+    use HasFactory, Notifiable, HasRoles; // ⬅️ penting
+
+    // (opsional, aman untuk guard default)
+    protected string $guard_name = 'web';
+
+    protected $fillable = ['name', 'email', 'password'];
+
+    protected $hidden = ['password', 'remember_token'];
+
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
+
+    // helper (opsional)
+    public function isAdmin(): bool
+    {
+        return $this->hasAnyRole(['admin', 'super_admin']);
+    }
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
+    }
+
+
+
+    public function outlets(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Outlet::class,
+            'user_outlets',
+            'user_id',
+            'outlet_id'
+        );
+    }
+
+    public function scanRecords()
+    {
+        return $this->hasMany(
+            ScanRecord::class
+        );
+    }
+}
