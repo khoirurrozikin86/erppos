@@ -37,6 +37,8 @@ class UsersAndPermissionsSeeder extends Seeder
             'document-numbering' => ['view', 'create', 'update', 'delete'],
             'categories' => ['view', 'create', 'update', 'delete'],
             'units' => ['view', 'create', 'update', 'delete'],
+            'suppliers' => ['view', 'create', 'update', 'delete'],
+            'customers' => ['view', 'create', 'update', 'delete'],
 
 
 
@@ -77,6 +79,8 @@ class UsersAndPermissionsSeeder extends Seeder
             'document-numbering.view',
             'categories.view',
             'units.view',
+            'suppliers.view',
+            'customers.view',
 
         ]);
 
@@ -147,6 +151,17 @@ class UsersAndPermissionsSeeder extends Seeder
             'units.create',
             'units.update',
             'units.delete',
+
+            'suppliers.view',
+            'suppliers.create',
+            'suppliers.update',
+            'suppliers.delete',
+
+            'customers.view',
+            'customers.create',
+            'customers.update',
+            'customers.delete',
+
 
 
 

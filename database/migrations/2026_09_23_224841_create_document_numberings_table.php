@@ -12,15 +12,22 @@ return new class extends Migration
             $table->id();
 
             $table->foreignId('company_id')
-                ->unique()
                 ->constrained('companies')
                 ->cascadeOnDelete();
 
             $table->string('document_type', 50);
             $table->string('prefix', 20);
-            $table->string('format', 100)->default('{PREFIX}/{YYYY}/{MM}/{NUMBER}');
-            $table->unsignedInteger('next_number')->default(1);
-            $table->unsignedTinyInteger('number_length')->default(5);
+
+            $table->string('format', 100)
+                ->default('{PREFIX}/{YYYY}/{MM}/{NUMBER}');
+
+            $table->unsignedInteger('next_number')
+                ->default(1);
+
+            $table->unsignedTinyInteger('number_length')
+                ->default(5);
+
+
 
             $table->enum('reset_period', [
                 'never',
@@ -28,14 +35,13 @@ return new class extends Migration
                 'monthly',
             ])->default('monthly');
 
-            $table->boolean('is_active')->default(true);
+            $table->boolean('is_active')
+                ->default(true);
 
             $table->timestamps();
 
-            $table->unique(
-                ['company_id', 'document_type'],
-                'document_numberings_company_type_unique'
-            );
+            $table->index('document_type');
+            $table->index('is_active');
         });
     }
 

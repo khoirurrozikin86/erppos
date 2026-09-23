@@ -187,6 +187,87 @@
             @endcan
 
 
+            @can('suppliers.view')
+                <li class="nav-item">
+
+                    <a class="nav-link" data-bs-toggle="collapse" href="#menu-suppliers" role="button"
+                        aria-expanded="{{ request()->routeIs('super.suppliers.*') ? 'true' : 'false' }}"
+                        aria-controls="menu-suppliers">
+
+                        <i class="link-icon" data-feather="truck"></i>
+
+                        <span class="link-title">
+                            Supplier
+                        </span>
+
+                        <i class="link-arrow" data-feather="chevron-down"></i>
+
+                    </a>
+
+                    <div class="collapse {{ request()->routeIs('super.suppliers.*') ? 'show' : '' }}"
+                        id="menu-suppliers">
+
+                        <ul class="nav sub-menu">
+
+                            <li class="nav-item">
+
+                                <a href="{{ route('super.suppliers.index') }}"
+                                    class="nav-link {{ request()->routeIs('super.suppliers.index') ? 'active' : '' }}">
+
+                                    Show
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+            @endcan
+
+            @can('customers.view')
+                <li class="nav-item">
+
+                    <a class="nav-link" data-bs-toggle="collapse" href="#menu-customers" role="button"
+                        aria-expanded="{{ request()->routeIs('super.customers.*') ? 'true' : 'false' }}"
+                        aria-controls="menu-customers">
+
+                        <i class="link-icon" data-feather="users"></i>
+
+                        <span class="link-title">
+                            Customer
+                        </span>
+
+                        <i class="link-arrow" data-feather="chevron-down"></i>
+
+                    </a>
+
+                    <div class="collapse {{ request()->routeIs('super.customers.*') ? 'show' : '' }}"
+                        id="menu-customers">
+
+                        <ul class="nav sub-menu">
+
+                            <li class="nav-item">
+
+                                <a href="{{ route('super.customers.index') }}"
+                                    class="nav-link {{ request()->routeIs('super.customers.index') ? 'active' : '' }}">
+
+                                    Show
+
+                                </a>
+
+                            </li>
+
+                        </ul>
+
+                    </div>
+
+                </li>
+            @endcan
+
+
 
 
 

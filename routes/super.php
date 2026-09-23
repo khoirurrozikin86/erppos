@@ -14,7 +14,9 @@ use App\Http\Controllers\Admin\{
     EmailSettingController,
     DocumentNumberingController,
     CategoryController,
-    UnitController
+    UnitController,
+    SupplierController,
+    CustomerController,
 };
 
 Route::middleware(['auth'])
@@ -480,6 +482,70 @@ Route::middleware(['auth'])
 
             Route::middleware('permission:units.delete')
                 ->delete('/{unit}', [UnitController::class, 'destroy'])
+                ->name('destroy');
+        });
+
+
+        Route::prefix('suppliers')->name('suppliers.')->group(function () {
+
+            Route::middleware('permission:suppliers.view')
+                ->get('/', [SupplierController::class, 'index'])
+                ->name('index');
+
+            Route::middleware('permission:suppliers.view')
+                ->get('/dt', [SupplierController::class, 'dt'])
+                ->name('dt');
+
+            Route::middleware('permission:suppliers.view')
+                ->get('/export', [SupplierController::class, 'export'])
+                ->name('export');
+
+
+
+            Route::middleware('permission:suppliers.create')
+                ->post('/', [SupplierController::class, 'store'])
+                ->name('store');
+
+            Route::middleware('permission:suppliers.update')
+                ->put('/{supplier}', [SupplierController::class, 'update'])
+                ->name('update');
+
+            Route::middleware('permission:suppliers.delete')
+                ->delete('/{supplier}', [SupplierController::class, 'destroy'])
+                ->name('destroy');
+        });
+
+
+        Route::prefix('customers')->name('customers.')->group(function () {
+
+            // List / halaman Customer
+            Route::middleware('permission:customers.view')
+                ->get('/', [CustomerController::class, 'index'])
+                ->name('index');
+
+            // DataTables
+            Route::middleware('permission:customers.view')
+                ->get('/dt', [CustomerController::class, 'dt'])
+                ->name('dt');
+
+            // Export Excel
+            Route::middleware('permission:customers.view')
+                ->get('/export', [CustomerController::class, 'export'])
+                ->name('export');
+
+            // Create
+            Route::middleware('permission:customers.create')
+                ->post('/', [CustomerController::class, 'store'])
+                ->name('store');
+
+            // Update
+            Route::middleware('permission:customers.update')
+                ->put('/{customer}', [CustomerController::class, 'update'])
+                ->name('update');
+
+            // Delete
+            Route::middleware('permission:customers.delete')
+                ->delete('/{customer}', [CustomerController::class, 'destroy'])
                 ->name('destroy');
         });
     });

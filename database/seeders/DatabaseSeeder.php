@@ -30,6 +30,9 @@ class DatabaseSeeder extends Seeder
             companySeeder::class,
             CategorySeeder::class,
             UnitSeeder::class,
+            SupplierSeeder::class,
+            DocumentNumberingSeeder::class,
+            CustomerSeeder::class,
 
         ]);
     }
