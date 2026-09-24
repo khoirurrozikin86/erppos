@@ -39,6 +39,7 @@ class UsersAndPermissionsSeeder extends Seeder
             'units' => ['view', 'create', 'update', 'delete'],
             'suppliers' => ['view', 'create', 'update', 'delete'],
             'customers' => ['view', 'create', 'update', 'delete'],
+            'products' => ['view', 'create', 'update', 'delete'],
 
 
 
@@ -81,6 +82,7 @@ class UsersAndPermissionsSeeder extends Seeder
             'units.view',
             'suppliers.view',
             'customers.view',
+            'products.view',
 
         ]);
 
@@ -161,6 +163,12 @@ class UsersAndPermissionsSeeder extends Seeder
             'customers.create',
             'customers.update',
             'customers.delete',
+
+            'products.view',
+            'products.create',
+            'products.update',
+            'products.delete',
+
 
 
 

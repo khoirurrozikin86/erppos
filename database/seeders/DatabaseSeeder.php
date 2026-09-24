@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             SupplierSeeder::class,
             DocumentNumberingSeeder::class,
             CustomerSeeder::class,
+            productSeeder::class,
 
         ]);
     }

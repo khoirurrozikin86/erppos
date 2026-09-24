@@ -268,6 +268,37 @@
             @endcan
 
 
+            @can('products.view')
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="collapse" href="#menu-products" role="button"
+                        aria-expanded="{{ request()->routeIs('super.products.*') ? 'true' : 'false' }}"
+                        aria-controls="menu-products">
+
+                        <i class="link-icon" data-feather="package"></i>
+
+                        <span class="link-title">Barang</span>
+
+                        <i class="link-arrow" data-feather="chevron-down"></i>
+                    </a>
+
+                    <div class="collapse {{ request()->routeIs('super.products.*') ? 'show' : '' }}" id="menu-products">
+
+                        <ul class="nav sub-menu">
+                            <li class="nav-item">
+                                <a href="{{ route('super.products.index') }}"
+                                    class="nav-link {{ request()->routeIs('super.products.index') ? 'active' : '' }}">
+                                    Show
+                                </a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </li>
+            @endcan
+
+
+
+
 
 
 

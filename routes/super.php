@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\{
     UnitController,
     SupplierController,
     CustomerController,
+    ProductController,
 };
 
 Route::middleware(['auth'])
@@ -548,4 +549,30 @@ Route::middleware(['auth'])
                 ->delete('/{customer}', [CustomerController::class, 'destroy'])
                 ->name('destroy');
         });
+
+
+
+        Route::prefix('products')
+            ->name('products.')
+            ->group(function () {
+                Route::middleware('permission:products.view')
+                    ->get('/', [ProductController::class, 'index'])
+                    ->name('index');
+
+                Route::middleware('permission:products.view')
+                    ->get('/dt', [ProductController::class, 'dt'])
+                    ->name('dt');
+
+                Route::middleware('permission:products.create')
+                    ->post('/', [ProductController::class, 'store'])
+                    ->name('store');
+
+                Route::middleware('permission:products.update')
+                    ->put('/{product}', [ProductController::class, 'update'])
+                    ->name('update');
+
+                Route::middleware('permission:products.delete')
+                    ->delete('/{product}', [ProductController::class, 'destroy'])
+                    ->name('destroy');
+            });
     });
