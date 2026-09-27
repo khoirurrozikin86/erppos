@@ -7,8 +7,9 @@ Aplikasi ERP untuk mengelola data operasional, persediaan, pembelian, penjualan,
 - **Master data:** perusahaan, kategori, satuan, produk, supplier, customer, dan daftar harga.
 - **Pembelian:** permintaan pembelian, purchase order, penerimaan barang, dan retur pembelian.
 - **Persediaan:** stok, kartu stok, stock opname, serta laporan persediaan.
-- **Penjualan:** quotation, sales order, pengiriman, invoice, dan piutang.
-- **POS:** sesi kasir, transaksi penjualan, pengurangan stok, dan pencatatan biaya pokok.
+- **Penjualan:** quotation, sales order, pengiriman, invoice, customer return, dan piutang.
+- **POS:** sesi kasir, transaksi penjualan, void dengan refund, pengurangan stok, dan pencatatan biaya pokok.
+- **Laporan:** penjualan invoice dan POS, pembelian, persediaan, kas/bank, serta laba rugi.
 - **Keuangan dan akuntansi:** kas/bank, utang, akun, jurnal, dan laporan laba rugi.
 - **Administrasi:** dashboard, pengaturan, pengguna, role, permission, dan audit log.
 
@@ -31,6 +32,14 @@ Dari PO, masukkan kuantitas barang yang benar-benar diterima. Setelah penerimaan
 Setelah stok tersedia, lakukan transaksi di POS. Sistem memvalidasi ketersediaan stok dan biaya persediaan, lalu mencatat penjualan, mengurangi stok, dan menghitung biaya pokok penjualan.
 
 > Jika POS menampilkan pesan bahwa biaya persediaan belum tersedia, periksa harga beli produk dan pastikan penerimaan barang sudah dicatat. Stok tanpa biaya yang valid tidak dapat digunakan untuk transaksi POS.
+
+### 5. Proses Customer Return
+
+Customer Return dibuat dari Sales Invoice yang sudah diterbitkan. Sistem membatasi kuantitas retur sesuai jumlah yang belum pernah diretur, mengembalikan barang ke stok dengan biaya pokok pengiriman asal, membuat jurnal retur dan pajak, serta mencatat refund keluar dari akun kas/bank yang dipilih.
+
+### 6. Void transaksi POS
+
+Void hanya berlaku untuk transaksi POS yang selesai dan memerlukan alasan. Kasir dapat void transaksi miliknya selama sesi masih terbuka. Void dari sesi yang sudah ditutup memerlukan hak supervisor. Sistem tidak menghapus struk: status, pelaku, waktu, dan alasan void disimpan; stok serta biaya pokok dipulihkan; refund keluar dicatat ke akun pembayaran asal; dan jurnal penjualan dibalik. Transaksi void tetap terlihat di laporan, tetapi tidak masuk total penjualan.
 
 ```text
 Master Barang
@@ -90,9 +99,14 @@ Penjualan melalui POS
    ```bash
    php artisan migrate
    php artisan db:seed --class=UsersAndPermissionsSeeder
+   php artisan db:seed --class=DocumentNumberingSeeder
+   php artisan db:seed --class=CustomerReturnsAccessSeeder
+   php artisan db:seed --class=PosVoidAccessSeeder
    ```
 
    Seeder data awal lain tersedia di `database/seeders`; jalankan seeder yang dibutuhkan sesuai lingkungan.
+
+   Untuk database yang sudah berjalan, `CustomerReturnsAccessSeeder` dan `PosVoidAccessSeeder` menambahkan permission modul tanpa mengubah akun atau password yang sudah ada.
 
 5. Jalankan aplikasi dan Vite di terminal terpisah:
 

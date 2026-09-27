@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\{
     SalesOrderController,
     DeliveryController,
     SalesInvoiceController,
+    CustomerReturnController,
     AccountReceivableController,
     CashBankController,
     AccountPayableController,
@@ -33,6 +34,7 @@ use App\Http\Controllers\Admin\{
     JournalEntryController,
     ProfitLossController,
     SalesReportController,
+    PosSalesReportController,
     PurchaseReportController,
     InventoryReportController,
     CashBankReportController,
@@ -478,6 +480,18 @@ Route::middleware(['auth'])
             Route::middleware('permission:sales-invoices.email')->post('/{salesInvoice}/email', [SalesInvoiceController::class, 'email'])->name('email');
         });
 
+        Route::prefix('customer-returns')->name('customer-returns.')->group(function () {
+            Route::middleware('permission:customer-returns.view')->get('/', [CustomerReturnController::class, 'index'])->name('index');
+            Route::middleware('permission:customer-returns.view')->get('/dt', [CustomerReturnController::class, 'dt'])->name('dt');
+            Route::middleware('permission:customer-returns.create')->get('/sales-invoices/eligible', [CustomerReturnController::class, 'eligible'])->name('eligible');
+            Route::middleware('permission:customer-returns.create')->get('/sales-invoices/eligible/{salesInvoiceId}', [CustomerReturnController::class, 'source'])->whereNumber('salesInvoiceId')->name('source');
+            Route::middleware('permission:customer-returns.create')->get('/create', [CustomerReturnController::class, 'create'])->name('create');
+            Route::middleware('permission:customer-returns.create')->post('/', [CustomerReturnController::class, 'store'])->name('store');
+            Route::middleware('permission:customer-returns.view')->get('/{customerReturn}', [CustomerReturnController::class, 'show'])->name('show');
+            Route::middleware('permission:customer-returns.view')->get('/{customerReturn}/pdf', [CustomerReturnController::class, 'pdf'])->name('pdf');
+            Route::middleware('permission:customer-returns.view')->get('/{customerReturn}/pdf/download', [CustomerReturnController::class, 'downloadPdf'])->name('pdf.download');
+        });
+
         Route::prefix('account-receivable')->name('account-receivable.')->group(function () {
             Route::middleware('permission:account-receivable.view')->get('/', [AccountReceivableController::class, 'index'])->name('index');
             Route::middleware('permission:account-receivable.view')->get('/dt', [AccountReceivableController::class, 'dt'])->name('dt');
@@ -503,6 +517,7 @@ Route::middleware(['auth'])
             Route::middleware('permission:pos.view')->get('/', [PosController::class, 'index'])->name('index');
             Route::middleware('permission:pos.view')->get('/products', [PosController::class, 'products'])->name('products');
             Route::middleware('permission:pos.sell')->post('/checkout', [PosController::class, 'checkout'])->name('checkout');
+            Route::middleware('permission:pos.void')->put('/sales/{posSale}/void', [PosController::class, 'void'])->name('void');
         });
 
         Route::prefix('cash-bank')->name('cash-bank.')->group(function () {
@@ -536,6 +551,10 @@ Route::middleware(['auth'])
         Route::prefix('reports/sales')->name('reports.sales.')->group(function () {
             Route::middleware('permission:sales-report.view')->get('/', [SalesReportController::class, 'index'])->name('index');
             Route::middleware('permission:sales-report.view')->get('/export', [SalesReportController::class, 'export'])->name('export');
+        });
+        Route::prefix('reports/pos-sales')->name('reports.pos-sales.')->group(function () {
+            Route::middleware('permission:sales-report.view')->get('/', [PosSalesReportController::class, 'index'])->name('index');
+            Route::middleware('permission:sales-report.view')->get('/export', [PosSalesReportController::class, 'export'])->name('export');
         });
         Route::prefix('reports/purchase')->name('reports.purchase.')->group(function () {
             Route::middleware('permission:purchase-report.view')->get('/', [PurchaseReportController::class, 'index'])->name('index');

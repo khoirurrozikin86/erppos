@@ -48,6 +48,10 @@ class DocumentNumberingSeeder extends Seeder
                 'prefix' => 'INV',
             ],
             [
+                'document_type' => 'customer_return',
+                'prefix' => 'CRT',
+            ],
+            [
                 'document_type' => 'customer_payment',
                 'prefix' => 'RCPT',
             ],

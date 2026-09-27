@@ -47,16 +47,24 @@ class CashBankController extends Controller
 
         return DataTables::eloquent($query->transactions($filters['from_date'] ?? null, $filters['to_date'] ?? null))
             ->addColumn('account_name', fn ($transaction) => $transaction->account?->name ?? 'Akun dihapus')
-            ->addColumn('counter_account_name', fn ($transaction) => $transaction->sales_invoice_payment_id ? 'Piutang Usaha' : ($transaction->supplier_payment_id ? 'Utang Supplier' : ($transaction->pos_session_id ? 'POS' : ($transaction->counterAccount ? $transaction->counterAccount->code . ' · ' . $transaction->counterAccount->name : '—'))))
-            ->addColumn('source_number', fn ($transaction) => $transaction->payment?->invoice?->number ?? ($transaction->supplierPayment?->goodsReceipt?->number ? 'GR ' . $transaction->supplierPayment->goodsReceipt->number : ($transaction->posSale?->number ? 'POS ' . $transaction->posSale->number : ($transaction->posSession?->number ? 'POS ' . $transaction->posSession->number : 'Manual'))))
+            ->addColumn('counter_account_name', fn ($transaction) => $transaction->pos_sale_void_id ? 'Void Penjualan POS' : ($transaction->customer_return_id ? 'Retur Penjualan' : ($transaction->sales_invoice_payment_id ? 'Piutang Usaha' : ($transaction->supplier_payment_id ? 'Utang Supplier' : ($transaction->pos_session_id ? 'POS' : ($transaction->counterAccount ? $transaction->counterAccount->code . ' · ' . $transaction->counterAccount->name : '—'))))))
+            ->addColumn('source_number', function ($transaction) {
+                if ($transaction->posSaleVoid?->number) return 'Void POS ' . $transaction->posSaleVoid->number;
+                if ($transaction->customerReturn?->number) return 'CRT ' . $transaction->customerReturn->number;
+                if ($transaction->payment?->invoice?->number) return $transaction->payment->invoice->number;
+                if ($transaction->supplierPayment?->goodsReceipt?->number) return 'GR ' . $transaction->supplierPayment->goodsReceipt->number;
+                if ($transaction->posSale?->number) return 'POS ' . $transaction->posSale->number;
+                if ($transaction->posSession?->number) return 'POS ' . $transaction->posSession->number;
+                return 'Manual';
+            })
             ->addColumn('direction_label', fn ($transaction) => $transaction->direction === 'in'
                 ? '<span class="badge bg-success">Masuk</span>'
                 : '<span class="badge bg-danger">Keluar</span>')
             ->addColumn('amount_signed', fn ($transaction) => ($transaction->direction === 'out' ? -1 : 1) * (float) $transaction->amount)
             ->addColumn('creator_name', fn ($transaction) => $transaction->creator?->name ?? '—')
             ->addColumn('actions', function ($transaction) {
-                if ($transaction->sales_invoice_payment_id || $transaction->supplier_payment_id || $transaction->pos_session_id || $transaction->pos_sale_id) {
-                    $title = $transaction->sales_invoice_payment_id ? 'Dikelola melalui Account Receivable' : ($transaction->supplier_payment_id ? 'Dikelola melalui Account Payable' : 'Dikelola melalui POS');
+                if ($transaction->sales_invoice_payment_id || $transaction->supplier_payment_id || $transaction->customer_return_id || $transaction->pos_sale_void_id || $transaction->pos_session_id || $transaction->pos_sale_id) {
+                    $title = $transaction->pos_sale_void_id ? 'Dikelola melalui POS Void' : ($transaction->customer_return_id ? 'Dikelola melalui Customer Return' : ($transaction->sales_invoice_payment_id ? 'Dikelola melalui Account Receivable' : ($transaction->supplier_payment_id ? 'Dikelola melalui Account Payable' : 'Dikelola melalui POS')));
                     return '<span class="text-muted" title="' . e($title) . '"><i data-feather="link-2"></i></span>';
                 }
 

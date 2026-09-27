@@ -27,6 +27,7 @@ class SalesInvoice extends Model
     public function creator(): BelongsTo { return $this->belongsTo(User::class, 'created_by'); }
     public function issuer(): BelongsTo { return $this->belongsTo(User::class, 'issued_by'); }
     public function items(): HasMany { return $this->hasMany(SalesInvoiceItem::class); }
+    public function customerReturns(): HasMany { return $this->hasMany(CustomerReturn::class); }
     public function emailLogs(): HasMany { return $this->hasMany(SalesInvoiceEmailLog::class)->latest('sent_at'); }
     public function payments(): HasMany { return $this->hasMany(SalesInvoicePayment::class)->orderByDesc('payment_date')->orderByDesc('id'); }
 }

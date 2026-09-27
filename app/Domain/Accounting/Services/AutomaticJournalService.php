@@ -6,7 +6,9 @@ use App\Domain\Audit\Services\AuditLogService;
 use App\Domain\Companies\Services\CompanyContext;
 use App\Domain\Settings\Services\DocumentNumberService;
 use App\Models\CashBankAccount;
+use App\Models\CashBankTransaction;
 use App\Models\ChartOfAccount;
+use App\Models\CustomerReturn;
 use App\Models\JournalEntry;
 use App\Models\SalesInvoice;
 use App\Models\SalesInvoicePayment;
@@ -73,6 +75,46 @@ class AutomaticJournalService
         });
     }
 
+    public function recordCustomerReturnRefund(CashBankTransaction $transaction, CustomerReturn $customerReturn, int $userId): JournalEntry
+    {
+        if ($entry = $this->existing(CashBankTransaction::class, $transaction->id)) return $entry;
+
+        $transaction->loadMissing(['account.chartOfAccount']);
+        $cashCoa = $transaction->account?->chartOfAccount;
+        if (!$cashCoa || !$cashCoa->is_active || $cashCoa->is_group || $cashCoa->account_type !== 'asset' || $cashCoa->company_id !== $this->company->id()) {
+            throw ValidationException::withMessages(['accounting' => 'Akun refund belum terhubung ke COA aset aktif.']);
+        }
+
+        $subtotal = round((float) $customerReturn->subtotal, 2);
+        $tax = round((float) $customerReturn->tax_amount, 2);
+        $amount = round((float) $transaction->amount, 2);
+        if (round($subtotal + $tax, 2) !== $amount) {
+            throw ValidationException::withMessages(['accounting' => 'Nilai refund tidak sama dengan subtotal dan pajak retur.']);
+        }
+
+        $returns = $this->account('4200', 'revenue');
+        $lines = [
+            ['chart_of_account_id' => $returns->id, 'line_number' => 1, 'description' => "Retur penjualan {$customerReturn->number}", 'debit' => $subtotal, 'credit' => 0],
+        ];
+        if ($tax > 0) {
+            $taxAccount = $this->account('2120', 'liability');
+            $lines[] = ['chart_of_account_id' => $taxAccount->id, 'line_number' => 2, 'description' => "Pembatalan pajak retur {$customerReturn->number}", 'debit' => $tax, 'credit' => 0];
+        }
+        $lines[] = ['chart_of_account_id' => $cashCoa->id, 'line_number' => count($lines) + 1, 'description' => "Refund customer {$customerReturn->number}", 'debit' => 0, 'credit' => $amount];
+
+        return $this->createPosted(
+            sourceType: CashBankTransaction::class,
+            sourceId: $transaction->id,
+            date: $transaction->transaction_date,
+            reference: $customerReturn->number,
+            description: "Refund Customer Return {$customerReturn->number}",
+            lines: $lines,
+            total: $amount,
+            userId: $userId,
+            sourceAction: 'original',
+        );
+    }
+
     public function recordManualCashBankTransaction(\App\Models\CashBankTransaction $transaction, int $userId): JournalEntry
     {
         if ($entry = $this->existing(\App\Models\CashBankTransaction::class, $transaction->id, 'current')) return $entry;
@@ -103,10 +145,11 @@ class AutomaticJournalService
         if ($amount <= 0) return null;
         if ($entry = $this->existing(StockMovement::class, $movement->id)) return $entry;
 
-        $movement->loadMissing(['goodsReceipt', 'purchaseReturn', 'delivery', 'stockOpname', 'posSale']);
+        $movement->loadMissing(['goodsReceipt', 'purchaseReturn', 'customerReturn', 'delivery', 'stockOpname', 'posSale']);
         $inventory = $this->account('1140', 'asset');
         $lines = [];
         $reference = $movement->goodsReceipt?->number ?? $movement->purchaseReturn?->number
+            ?? $movement->customerReturn?->number
             ?? $movement->delivery?->number ?? $movement->stockOpname?->number ?? $movement->posSale?->number;
         $description = $movement->notes ?: "Mutasi persediaan barang #{$movement->id}";
 
@@ -129,6 +172,12 @@ class AutomaticJournalService
             } elseif ($referenceValue > $amount) {
                 $lines[] = ['chart_of_account_id' => $variance->id, 'line_number' => 3, 'description' => $description, 'debit' => 0, 'credit' => $referenceValue - $amount];
             }
+        } elseif (in_array($movement->movement_type, ['customer_return', 'pos_void'], true)) {
+            $cogs = $this->account('5100', 'expense');
+            $lines = [
+                ['chart_of_account_id' => $inventory->id, 'line_number' => 1, 'description' => $description, 'debit' => $amount, 'credit' => 0],
+                ['chart_of_account_id' => $cogs->id, 'line_number' => 2, 'description' => $description, 'debit' => 0, 'credit' => $amount],
+            ];
         } elseif (in_array($movement->movement_type, ['sales_delivery', 'pos_sale'], true)) {
             $cogs = $this->account('5100', 'expense');
             $lines = [
@@ -189,6 +238,16 @@ class AutomaticJournalService
             reference: $sale->number, description: "Penjualan POS {$sale->number}",
             lines: $lines, total: $total, userId: $userId, sourceAction: 'original',
         );
+    }
+
+    public function reversePosSale(PosSale $sale, int $userId): JournalEntry
+    {
+        $entry = $this->existing(PosSale::class, $sale->id);
+        if (!$entry) {
+            throw ValidationException::withMessages(['accounting' => 'Jurnal penjualan POS asli tidak ditemukan; void dibatalkan.']);
+        }
+
+        return $this->reverse($entry, $userId);
     }
 
     public function recordNonStockReceipt(GoodsReceiptItem $item, GoodsReceipt $receipt, int $userId): ?JournalEntry

@@ -365,7 +365,7 @@
             @endcan
 
             {{-- ================= SALES ================= --}}
-            @canany(['sales-quotations.view', 'sales-orders.view', 'deliveries.view', 'sales-invoices.view'])
+            @canany(['sales-quotations.view', 'sales-orders.view', 'deliveries.view', 'sales-invoices.view', 'customer-returns.view'])
                 <li class="nav-item nav-category">SALES</li>
             @endcanany
             @can('sales-quotations.view')
@@ -395,6 +395,13 @@
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('super.sales-invoices.*') ? 'active' : '' }}" href="{{ route('super.sales-invoices.index') }}">
                         <i class="link-icon" data-feather="file-text"></i><span class="link-title">Sales Invoice</span>
+                    </a>
+                </li>
+            @endcan
+            @can('customer-returns.view')
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('super.customer-returns.*') ? 'active' : '' }}" href="{{ route('super.customer-returns.index') }}">
+                        <i class="link-icon" data-feather="corner-down-left"></i><span class="link-title">Customer Return</span>
                     </a>
                 </li>
             @endcan
@@ -483,6 +490,11 @@
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('super.reports.sales.*') ? 'active' : '' }}" href="{{ route('super.reports.sales.index') }}">
                         <i class="link-icon" data-feather="bar-chart-2"></i><span class="link-title">Penjualan</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {{ request()->routeIs('super.reports.pos-sales.*') ? 'active' : '' }}" href="{{ route('super.reports.pos-sales.index') }}">
+                        <i class="link-icon" data-feather="shopping-bag"></i><span class="link-title">Penjualan POS</span>
                     </a>
                 </li>
             @endcan

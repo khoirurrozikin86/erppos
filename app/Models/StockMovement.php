@@ -9,7 +9,7 @@ class StockMovement extends Model
 {
     protected $fillable = [
         'product_id', 'goods_receipt_id', 'goods_receipt_item_id', 'purchase_return_id', 'purchase_return_item_id',
-        'stock_opname_id', 'stock_opname_item_id', 'delivery_id', 'delivery_item_id', 'pos_sale_id', 'pos_sale_item_id', 'created_by',
+        'customer_return_id', 'customer_return_item_id', 'stock_opname_id', 'stock_opname_item_id', 'delivery_id', 'delivery_item_id', 'pos_sale_id', 'pos_sale_item_id', 'created_by',
         'movement_type', 'quantity', 'quantity_before', 'quantity_after', 'cost_amount', 'notes',
     ];
 
@@ -36,6 +36,11 @@ class StockMovement extends Model
     public function purchaseReturn(): BelongsTo
     {
         return $this->belongsTo(PurchaseReturn::class);
+    }
+
+    public function customerReturn(): BelongsTo
+    {
+        return $this->belongsTo(CustomerReturn::class);
     }
 
     public function stockOpname(): BelongsTo

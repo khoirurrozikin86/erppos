@@ -234,6 +234,30 @@ $(function() {
     $('#posCashReceived').on('input', refreshCashChange);
     $('#posExactCash').on('click', function() { $('#posCashReceived').val(currentTotal().toFixed(2)).trigger('input'); });
     filterPaymentAccounts();
+    const promptVoidSale = (url, number) => {
+        Swal.fire({
+            icon: 'warning',
+            title: `Void ${number}?`,
+            input: 'textarea',
+            inputLabel: 'Alasan Void',
+            inputPlaceholder: 'Contoh: salah input barang atau jumlah',
+            inputAttributes: { maxlength: 2000 },
+            inputValidator: value => value?.trim() ? undefined : 'Alasan wajib diisi.',
+            showCancelButton: true,
+            confirmButtonText: 'Void dan Refund',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#c0392b',
+            preConfirm: reason => $.ajax({
+                url,
+                method: 'PUT',
+                data: { _token: @json(csrf_token()), reason },
+            }).catch(xhr => Swal.showValidationMessage(xhr.responseJSON?.message || Object.values(xhr.responseJSON?.errors || {}).flat()[0] || 'Void gagal diproses.')),
+        }).then(result => {
+            if (result.isConfirmed && result.value?.message) {
+                Swal.fire({ icon: 'success', title: 'Transaksi di-void', text: result.value.message });
+            }
+        });
+    };
     $('#posCheckout').on('click', function() {
         const items = [...cart.values()];
         if (!items.length) { Swal.fire({ icon: 'warning', title: 'Keranjang kosong', text: 'Tambahkan barang sebelum memproses penjualan.' }); return; }
@@ -250,7 +274,15 @@ $(function() {
             if (!result.isConfirmed) return;
             const button = $('#posCheckout').prop('disabled', true);
             $.ajax({ url: @json(route('super.pos.checkout')), method: 'POST', data: payload })
-                .done(response => { cart.clear(); $('#posDiscountRate, #posCashReceived').val(0); refreshCart(); $('#posProductSearch').val('').trigger('input').focus(); Swal.fire({ icon: 'success', title: 'Penjualan Berhasil', html: `<strong>${safe(response.number)}</strong><br>Total ${money(response.total)}${response.change > 0 ? `<br>Kembalian ${money(response.change)}` : ''}` }); })
+                .done(response => {
+                    cart.clear(); $('#posDiscountRate, #posCashReceived').val(0); refreshCart(); $('#posProductSearch').val('').trigger('input').focus();
+                    Swal.fire({
+                        icon: 'success', title: 'Penjualan Berhasil',
+                        html: `<strong>${safe(response.number)}</strong><br>Total ${money(response.total)}${response.change > 0 ? `<br>Kembalian ${money(response.change)}` : ''}`,
+                        showDenyButton: @json(auth()->user()->can('pos.void')),
+                        confirmButtonText: 'Selesai', denyButtonText: 'Void transaksi', denyButtonColor: '#c0392b',
+                    }).then(result => { if (result.isDenied) promptVoidSale(response.void_url, response.number); });
+                })
                 .fail(xhr => Swal.fire({ icon: 'error', title: 'Penjualan Gagal', text: xhr.responseJSON?.message || Object.values(xhr.responseJSON?.errors || {}).flat()[0] || 'Transaksi tidak dapat disimpan.' }))
                 .always(() => button.prop('disabled', false));
         });

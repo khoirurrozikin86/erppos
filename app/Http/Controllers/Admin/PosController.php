@@ -7,6 +7,7 @@ use App\Domain\Pos\Services\PosSaleService;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\PosSale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -67,6 +68,26 @@ class PosController extends Controller
             'subtotal' => (float) $sale->subtotal, 'discount' => (float) $sale->discount_amount,
             'tax' => (float) $sale->tax_amount, 'total' => (float) $sale->total_amount,
             'change' => (float) $sale->change_amount,
+            'void_url' => route('super.pos.void', $sale),
         ], 201);
+    }
+
+    public function void(Request $request, PosSale $posSale, PosSaleService $service): JsonResponse
+    {
+        $data = $request->validate([
+            'reason' => ['required', 'string', 'max:2000'],
+        ]);
+        $sale = $service->void(
+            $posSale,
+            $data['reason'],
+            (int) $request->user()->id,
+            $request->user()->can('pos.void-closed-session'),
+        );
+
+        return response()->json([
+            'message' => "Transaksi {$sale->number} berhasil di-void. Stok dipulihkan dan refund tercatat.",
+            'number' => $sale->number,
+            'status' => $sale->status,
+        ]);
     }
 }

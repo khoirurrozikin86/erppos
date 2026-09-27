@@ -30,12 +30,13 @@ class StockCardQuery
                 'product.unit:id,name,symbol',
                 'goodsReceipt:id,number',
                 'purchaseReturn:id,number',
+                'customerReturn:id,number',
                 'stockOpname:id,number',
                 'delivery:id,number',
                 'posSale:id,number',
             ])
             ->select([
-                'id', 'product_id', 'goods_receipt_id', 'purchase_return_id', 'stock_opname_id', 'delivery_id', 'pos_sale_id', 'created_by',
+                'id', 'product_id', 'goods_receipt_id', 'purchase_return_id', 'customer_return_id', 'stock_opname_id', 'delivery_id', 'pos_sale_id', 'created_by',
                 'movement_type', 'quantity', 'quantity_before', 'quantity_after', 'notes', 'created_at',
             ])
             ->when($productId, fn (Builder $builder) => $builder->where('product_id', $productId), fn (Builder $builder) => $builder->whereRaw('1 = 0'))

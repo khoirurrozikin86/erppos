@@ -37,10 +37,12 @@ class StockCardExport implements FromQuery, WithHeadings, WithMapping, ShouldAut
             $movement->created_at?->format('Y-m-d H:i:s'),
             $movement->product?->code,
             $movement->product?->name,
-            $movement->goodsReceipt?->number ?? $movement->purchaseReturn?->number ?? $movement->stockOpname?->number ?? $movement->delivery?->number ?? $movement->posSale?->number,
+            $movement->goodsReceipt?->number ?? $movement->purchaseReturn?->number ?? $movement->customerReturn?->number ?? $movement->stockOpname?->number ?? $movement->delivery?->number ?? $movement->posSale?->number,
             match ($movement->movement_type) {
                 'purchase_receipt' => 'Penerimaan Barang',
                 'purchase_return' => 'Purchase Return',
+                'customer_return' => 'Customer Return',
+                'pos_void' => 'Void POS',
                 'stock_adjustment' => 'Stock Opname',
                 'sales_delivery' => 'Delivery',
                 'pos_sale' => 'Penjualan POS',
