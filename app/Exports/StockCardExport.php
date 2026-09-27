@@ -25,8 +25,16 @@ class StockCardExport implements FromQuery, WithHeadings, WithMapping, ShouldAut
     public function headings(): array
     {
         return [
-            'Tanggal Pencatatan', 'Kode Barang', 'Nama Barang', 'No. Dokumen',
-            'Tipe Pergerakan', 'Stok Masuk', 'Stok Keluar', 'Saldo', 'Satuan', 'Catatan',
+            'Tanggal Pencatatan',
+            'Kode Barang',
+            'Nama Barang',
+            'No. Dokumen',
+            'Tipe Pergerakan',
+            'Stok Masuk',
+            'Stok Keluar',
+            'Saldo',
+            'Satuan',
+            'Catatan',
         ];
     }
 

@@ -8,8 +8,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class CustomerReturnItem extends Model
 {
     protected $fillable = [
-        'customer_return_id', 'sales_invoice_item_id', 'product_id', 'quantity', 'unit_price',
-        'discount_amount', 'tax_rate', 'subtotal', 'tax_amount', 'line_total', 'cost_amount',
+        'customer_return_id',
+        'sales_invoice_item_id',
+        'product_id',
+        'quantity',
+        'unit_price',
+        'discount_amount',
+        'tax_rate',
+        'subtotal',
+        'tax_amount',
+        'line_total',
+        'cost_amount',
     ];
 
     protected function casts(): array

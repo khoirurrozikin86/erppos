@@ -9,8 +9,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class CustomerReturn extends Model
 {
     protected $fillable = [
-        'number', 'company_id', 'sales_invoice_id', 'customer_id', 'cash_bank_account_id',
-        'returned_by', 'returned_at', 'reason', 'notes', 'subtotal', 'tax_amount', 'total_amount',
+        'number',
+        'company_id',
+        'sales_invoice_id',
+        'customer_id',
+        'cash_bank_account_id',
+        'returned_by',
+        'returned_at',
+        'reason',
+        'notes',
+        'subtotal',
+        'tax_amount',
+        'total_amount',
     ];
 
     protected function casts(): array

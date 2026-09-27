@@ -27,7 +27,7 @@ class CustomerReturnsAccessSeeder extends Seeder
         });
 
         Role::query()->where('guard_name', 'web')->whereIn('name', ['admin', 'super_admin'])
-            ->get()->each(fn (Role $role) => $role->givePermissionTo($permissions));
+            ->get()->each(fn(Role $role) => $role->givePermissionTo($permissions));
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

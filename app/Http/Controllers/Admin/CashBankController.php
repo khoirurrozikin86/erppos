@@ -26,13 +26,13 @@ class CashBankController extends Controller
     public function accountsDt(CashBankQuery $query): JsonResponse
     {
         return DataTables::eloquent($query->accounts())
-            ->addColumn('type_label', fn (CashBankAccount $account) => $account->type === 'cash' ? 'Kas' : 'Bank')
-            ->addColumn('account_info', fn (CashBankAccount $account) => $account->type === 'bank'
+            ->addColumn('type_label', fn(CashBankAccount $account) => $account->type === 'cash' ? 'Kas' : 'Bank')
+            ->addColumn('account_info', fn(CashBankAccount $account) => $account->type === 'bank'
                 ? trim(($account->bank_name ?: 'Bank') . ' · ' . ($account->account_number ?: 'No. rekening belum diisi'), ' ·')
                 : 'Kas tunai')
-            ->addColumn('chart_account_label', fn (CashBankAccount $account) => $account->chartOfAccount ? $account->chartOfAccount->code . ' · ' . $account->chartOfAccount->name : 'Belum dipetakan')
-            ->addColumn('balance', fn (CashBankAccount $account) => round((float) $account->opening_balance + (float) ($account->incoming_total ?? 0) - (float) ($account->outgoing_total ?? 0), 2))
-            ->addColumn('status_label', fn (CashBankAccount $account) => $account->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-secondary">Nonaktif</span>')
+            ->addColumn('chart_account_label', fn(CashBankAccount $account) => $account->chartOfAccount ? $account->chartOfAccount->code . ' · ' . $account->chartOfAccount->name : 'Belum dipetakan')
+            ->addColumn('balance', fn(CashBankAccount $account) => round((float) $account->opening_balance + (float) ($account->incoming_total ?? 0) - (float) ($account->outgoing_total ?? 0), 2))
+            ->addColumn('status_label', fn(CashBankAccount $account) => $account->is_active ? '<span class="badge bg-success">Aktif</span>' : '<span class="badge bg-secondary">Nonaktif</span>')
             ->rawColumns(['status_label'])->toJson();
     }
 
@@ -46,8 +46,8 @@ class CashBankController extends Controller
         ]);
 
         return DataTables::eloquent($query->transactions($filters['from_date'] ?? null, $filters['to_date'] ?? null))
-            ->addColumn('account_name', fn ($transaction) => $transaction->account?->name ?? 'Akun dihapus')
-            ->addColumn('counter_account_name', fn ($transaction) => $transaction->pos_sale_void_id ? 'Void Penjualan POS' : ($transaction->customer_return_id ? 'Retur Penjualan' : ($transaction->sales_invoice_payment_id ? 'Piutang Usaha' : ($transaction->supplier_payment_id ? 'Utang Supplier' : ($transaction->pos_session_id ? 'POS' : ($transaction->counterAccount ? $transaction->counterAccount->code . ' · ' . $transaction->counterAccount->name : '—'))))))
+            ->addColumn('account_name', fn($transaction) => $transaction->account?->name ?? 'Akun dihapus')
+            ->addColumn('counter_account_name', fn($transaction) => $transaction->pos_sale_void_id ? 'Void Penjualan POS' : ($transaction->customer_return_id ? 'Retur Penjualan' : ($transaction->sales_invoice_payment_id ? 'Piutang Usaha' : ($transaction->supplier_payment_id ? 'Utang Supplier' : ($transaction->pos_session_id ? 'POS' : ($transaction->counterAccount ? $transaction->counterAccount->code . ' · ' . $transaction->counterAccount->name : '—'))))))
             ->addColumn('source_number', function ($transaction) {
                 if ($transaction->posSaleVoid?->number) return 'Void POS ' . $transaction->posSaleVoid->number;
                 if ($transaction->customerReturn?->number) return 'CRT ' . $transaction->customerReturn->number;
@@ -57,11 +57,11 @@ class CashBankController extends Controller
                 if ($transaction->posSession?->number) return 'POS ' . $transaction->posSession->number;
                 return 'Manual';
             })
-            ->addColumn('direction_label', fn ($transaction) => $transaction->direction === 'in'
+            ->addColumn('direction_label', fn($transaction) => $transaction->direction === 'in'
                 ? '<span class="badge bg-success">Masuk</span>'
                 : '<span class="badge bg-danger">Keluar</span>')
-            ->addColumn('amount_signed', fn ($transaction) => ($transaction->direction === 'out' ? -1 : 1) * (float) $transaction->amount)
-            ->addColumn('creator_name', fn ($transaction) => $transaction->creator?->name ?? '—')
+            ->addColumn('amount_signed', fn($transaction) => ($transaction->direction === 'out' ? -1 : 1) * (float) $transaction->amount)
+            ->addColumn('creator_name', fn($transaction) => $transaction->creator?->name ?? '—')
             ->addColumn('actions', function ($transaction) {
                 if ($transaction->sales_invoice_payment_id || $transaction->supplier_payment_id || $transaction->customer_return_id || $transaction->pos_sale_void_id || $transaction->pos_session_id || $transaction->pos_sale_id) {
                     $title = $transaction->pos_sale_void_id ? 'Dikelola melalui POS Void' : ($transaction->customer_return_id ? 'Dikelola melalui Customer Return' : ($transaction->sales_invoice_payment_id ? 'Dikelola melalui Account Receivable' : ($transaction->supplier_payment_id ? 'Dikelola melalui Account Payable' : 'Dikelola melalui POS')));

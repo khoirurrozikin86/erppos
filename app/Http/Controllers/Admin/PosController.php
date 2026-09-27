@@ -20,8 +20,8 @@ class PosController extends Controller
             'session' => $query->activeSession((int) $request->user()->id),
             'paymentAccounts' => $query->activePaymentAccounts(),
             'categories' => Category::query()->where('is_active', true)
-                ->whereHas('products', fn ($products) => $products->where('is_active', true)->where('allow_sales', true))
-                ->withCount(['products' => fn ($products) => $products->where('is_active', true)->where('allow_sales', true)])
+                ->whereHas('products', fn($products) => $products->where('is_active', true)->where('allow_sales', true))
+                ->withCount(['products' => fn($products) => $products->where('is_active', true)->where('allow_sales', true)])
                 ->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -34,18 +34,23 @@ class PosController extends Controller
         ]);
         $term = trim($data['q'] ?? '');
         $products = Product::query()->where('is_active', true)->where('allow_sales', true)
-            ->when($term !== '', fn ($query) => $query->where(fn ($search) => $search->where('code', 'like', "%{$term}%")->orWhere('name', 'like', "%{$term}%")->orWhere('barcode', 'like', "%{$term}%")))
-            ->when(!empty($data['category_id']), fn ($query) => $query->where('category_id', $data['category_id']))
+            ->when($term !== '', fn($query) => $query->where(fn($search) => $search->where('code', 'like', "%{$term}%")->orWhere('name', 'like', "%{$term}%")->orWhere('barcode', 'like', "%{$term}%")))
+            ->when(!empty($data['category_id']), fn($query) => $query->where('category_id', $data['category_id']))
             ->with(['unit:id,name,symbol', 'stock:id,product_id,quantity', 'primaryImage:id,product_id,path'])
             ->orderBy('name')->limit($term === '' ? 100 : 50)->get(['id', 'code', 'barcode', 'name', 'category_id', 'unit_id', 'sales_price', 'taxable', 'tax_rate', 'allow_discount', 'track_stock'])
-            ->map(fn (Product $product) => [
-                'id' => $product->id, 'code' => $product->code, 'name' => $product->name,
+            ->map(fn(Product $product) => [
+                'id' => $product->id,
+                'code' => $product->code,
+                'name' => $product->name,
                 'category_id' => $product->category_id,
                 'image' => $product->primaryImage ? asset('storage/' . $product->primaryImage->path) : null,
                 'unit' => $product->unit?->symbol ?: $product->unit?->name ?: '—',
-                'price' => (float) $product->sales_price, 'taxable' => $product->taxable,
-                'tax_rate' => (float) $product->tax_rate, 'allow_discount' => $product->allow_discount,
-                'track_stock' => $product->track_stock, 'stock' => (float) ($product->stock?->quantity ?? 0),
+                'price' => (float) $product->sales_price,
+                'taxable' => $product->taxable,
+                'tax_rate' => (float) $product->tax_rate,
+                'allow_discount' => $product->allow_discount,
+                'track_stock' => $product->track_stock,
+                'stock' => (float) ($product->stock?->quantity ?? 0),
             ]);
         return response()->json(['products' => $products]);
     }
@@ -64,9 +69,12 @@ class PosController extends Controller
         ]);
         $sale = $service->create($data, (int) $request->user()->id);
         return response()->json([
-            'message' => "Penjualan {$sale->number} berhasil disimpan.", 'number' => $sale->number,
-            'subtotal' => (float) $sale->subtotal, 'discount' => (float) $sale->discount_amount,
-            'tax' => (float) $sale->tax_amount, 'total' => (float) $sale->total_amount,
+            'message' => "Penjualan {$sale->number} berhasil disimpan.",
+            'number' => $sale->number,
+            'subtotal' => (float) $sale->subtotal,
+            'discount' => (float) $sale->discount_amount,
+            'tax' => (float) $sale->tax_amount,
+            'total' => (float) $sale->total_amount,
             'change' => (float) $sale->change_amount,
             'void_url' => route('super.pos.void', $sale),
         ], 201);

@@ -18,8 +18,8 @@ class CashBankQuery
     public function accounts(): Builder
     {
         return CashBankAccount::query()->where('company_id', $this->company->id())->with('chartOfAccount:id,code,name')
-            ->withSum(['transactions as incoming_total' => fn (Builder $query) => $query->where('direction', 'in')], 'amount')
-            ->withSum(['transactions as outgoing_total' => fn (Builder $query) => $query->where('direction', 'out')], 'amount')
+            ->withSum(['transactions as incoming_total' => fn(Builder $query) => $query->where('direction', 'in')], 'amount')
+            ->withSum(['transactions as outgoing_total' => fn(Builder $query) => $query->where('direction', 'out')], 'amount')
             ->orderBy('type')->orderBy('code');
     }
 
@@ -34,7 +34,7 @@ class CashBankQuery
     public function activeAccounts()
     {
         return CashBankAccount::query()->where('company_id', $this->company->id())->where('is_active', true)
-            ->whereHas('chartOfAccount', fn (Builder $query) => $query->where('is_active', true)->where('is_group', false)->where('account_type', 'asset'))
+            ->whereHas('chartOfAccount', fn(Builder $query) => $query->where('is_active', true)->where('is_group', false)->where('account_type', 'asset'))
             ->orderBy('type')->orderBy('code')->get(['id', 'code', 'name', 'type']);
     }
 

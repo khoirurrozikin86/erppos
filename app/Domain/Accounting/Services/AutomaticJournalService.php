@@ -45,9 +45,15 @@ class AutomaticJournalService
                 $lines[] = ['chart_of_account_id' => $taxAccount->id, 'line_number' => 3, 'description' => "Pajak invoice {$invoice->number}", 'debit' => 0, 'credit' => $tax];
             }
             return $this->createPosted(
-                sourceType: SalesInvoice::class, sourceId: $invoice->id, date: $invoice->invoice_date,
-                reference: $invoice->number, description: "Penerbitan Sales Invoice {$invoice->number}",
-                lines: $lines, total: $total, userId: $userId, sourceAction: 'original',
+                sourceType: SalesInvoice::class,
+                sourceId: $invoice->id,
+                date: $invoice->invoice_date,
+                reference: $invoice->number,
+                description: "Penerbitan Sales Invoice {$invoice->number}",
+                lines: $lines,
+                total: $total,
+                userId: $userId,
+                sourceAction: 'original',
             );
         });
     }
@@ -65,12 +71,18 @@ class AutomaticJournalService
             $receivable = $this->account('1130', 'asset');
             $amount = round((float) $payment->amount, 2);
             return $this->createPosted(
-                sourceType: SalesInvoicePayment::class, sourceId: $payment->id, date: $payment->payment_date,
-                reference: $payment->number, description: "Penerimaan pembayaran invoice {$payment->invoice?->number}",
+                sourceType: SalesInvoicePayment::class,
+                sourceId: $payment->id,
+                date: $payment->payment_date,
+                reference: $payment->number,
+                description: "Penerimaan pembayaran invoice {$payment->invoice?->number}",
                 lines: [
                     ['chart_of_account_id' => $cashCoa->id, 'line_number' => 1, 'description' => "Penerimaan {$payment->number}", 'debit' => $amount, 'credit' => 0],
                     ['chart_of_account_id' => $receivable->id, 'line_number' => 2, 'description' => "Pelunasan piutang {$payment->invoice?->number}", 'debit' => 0, 'credit' => $amount],
-                ], total: $amount, userId: $userId, sourceAction: 'original',
+                ],
+                total: $amount,
+                userId: $userId,
+                sourceAction: 'original',
             );
         });
     }
@@ -129,13 +141,18 @@ class AutomaticJournalService
         $debitAccount = $transaction->direction === 'in' ? $cashCoa : $counter;
         $creditAccount = $transaction->direction === 'in' ? $counter : $cashCoa;
         return $this->createPosted(
-            sourceType: \App\Models\CashBankTransaction::class, sourceId: $transaction->id,
-            date: $transaction->transaction_date, reference: $transaction->reference_number,
+            sourceType: \App\Models\CashBankTransaction::class,
+            sourceId: $transaction->id,
+            date: $transaction->transaction_date,
+            reference: $transaction->reference_number,
             description: "Mutasi kas/bank: {$transaction->description}",
             lines: [
                 ['chart_of_account_id' => $debitAccount->id, 'line_number' => 1, 'description' => $transaction->description, 'debit' => $amount, 'credit' => 0],
                 ['chart_of_account_id' => $creditAccount->id, 'line_number' => 2, 'description' => $transaction->description, 'debit' => 0, 'credit' => $amount],
-            ], total: $amount, userId: $userId, sourceAction: 'current',
+            ],
+            total: $amount,
+            userId: $userId,
+            sourceAction: 'current',
         );
     }
 
@@ -204,9 +221,15 @@ class AutomaticJournalService
 
         $total = array_sum(array_column($lines, 'debit'));
         return $this->createPosted(
-            sourceType: StockMovement::class, sourceId: $movement->id, date: $movement->created_at,
-            reference: $reference, description: $description, lines: $lines,
-            total: $total, userId: $userId, sourceAction: 'original',
+            sourceType: StockMovement::class,
+            sourceId: $movement->id,
+            date: $movement->created_at,
+            reference: $reference,
+            description: $description,
+            lines: $lines,
+            total: $total,
+            userId: $userId,
+            sourceAction: 'original',
         );
     }
 
@@ -234,9 +257,15 @@ class AutomaticJournalService
             $lines[] = ['chart_of_account_id' => $taxAccount->id, 'line_number' => 3, 'description' => "Pajak POS {$sale->number}", 'debit' => 0, 'credit' => $tax];
         }
         return $this->createPosted(
-            sourceType: PosSale::class, sourceId: $sale->id, date: $sale->sold_at,
-            reference: $sale->number, description: "Penjualan POS {$sale->number}",
-            lines: $lines, total: $total, userId: $userId, sourceAction: 'original',
+            sourceType: PosSale::class,
+            sourceId: $sale->id,
+            date: $sale->sold_at,
+            reference: $sale->number,
+            description: "Penjualan POS {$sale->number}",
+            lines: $lines,
+            total: $total,
+            userId: $userId,
+            sourceAction: 'original',
         );
     }
 
@@ -259,12 +288,18 @@ class AutomaticJournalService
         $clearing = $this->account('2130', 'liability');
         $description = "Pembelian non-persediaan dari penerimaan {$receipt->number}";
         return $this->createPosted(
-            sourceType: GoodsReceiptItem::class, sourceId: $item->id, date: $receipt->received_at,
-            reference: $receipt->number, description: $description,
+            sourceType: GoodsReceiptItem::class,
+            sourceId: $item->id,
+            date: $receipt->received_at,
+            reference: $receipt->number,
+            description: $description,
             lines: [
                 ['chart_of_account_id' => $expense->id, 'line_number' => 1, 'description' => $description, 'debit' => $amount, 'credit' => 0],
                 ['chart_of_account_id' => $clearing->id, 'line_number' => 2, 'description' => $description, 'debit' => 0, 'credit' => $amount],
-            ], total: $amount, userId: $userId, sourceAction: 'original',
+            ],
+            total: $amount,
+            userId: $userId,
+            sourceAction: 'original',
         );
     }
 
@@ -277,12 +312,18 @@ class AutomaticJournalService
         $clearing = $this->account('2130', 'liability');
         $description = "Retur barang non-persediaan {$returnNumber} dari {$receiptNumber}";
         return $this->createPosted(
-            sourceType: PurchaseReturnItem::class, sourceId: $item->id, date: $date,
-            reference: $returnNumber, description: $description,
+            sourceType: PurchaseReturnItem::class,
+            sourceId: $item->id,
+            date: $date,
+            reference: $returnNumber,
+            description: $description,
             lines: [
                 ['chart_of_account_id' => $clearing->id, 'line_number' => 1, 'description' => $description, 'debit' => $amount, 'credit' => 0],
                 ['chart_of_account_id' => $expense->id, 'line_number' => 2, 'description' => $description, 'debit' => 0, 'credit' => $amount],
-            ], total: $amount, userId: $userId, sourceAction: 'original',
+            ],
+            total: $amount,
+            userId: $userId,
+            sourceAction: 'original',
         );
     }
 
@@ -321,7 +362,7 @@ class AutomaticJournalService
     private function reverse(JournalEntry $entry, int $userId): JournalEntry
     {
         $entry->loadMissing('lines');
-        $lines = $entry->lines->map(fn ($line, $index) => [
+        $lines = $entry->lines->map(fn($line, $index) => [
             'chart_of_account_id' => $line->chart_of_account_id,
             'line_number' => $index + 1,
             'description' => "Pembalik: " . ($line->description ?: $entry->description),
@@ -329,9 +370,14 @@ class AutomaticJournalService
             'credit' => (float) $line->debit,
         ])->all();
         return $this->createPosted(
-            sourceType: $entry->source_type, sourceId: $entry->source_id,
-            date: today(), reference: $entry->number, description: "Pembalik jurnal {$entry->number}",
-            lines: $lines, total: (float) $entry->total_debit, userId: $userId,
+            sourceType: $entry->source_type,
+            sourceId: $entry->source_id,
+            date: today(),
+            reference: $entry->number,
+            description: "Pembalik jurnal {$entry->number}",
+            lines: $lines,
+            total: (float) $entry->total_debit,
+            userId: $userId,
             sourceAction: 'reversal-' . $entry->id,
         );
     }

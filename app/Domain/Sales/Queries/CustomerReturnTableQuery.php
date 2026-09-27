@@ -25,7 +25,7 @@ class CustomerReturnTableQuery
     {
         return SalesInvoice::query()
             ->where('status', 'issued')
-            ->whereHas('items', fn (Builder $items) => $items->whereColumn('returned_quantity', '<', 'quantity'))
+            ->whereHas('items', fn(Builder $items) => $items->whereColumn('returned_quantity', '<', 'quantity'))
             ->with(['customer:id,code,name'])
             ->withCount('items')
             ->orderByDesc('invoice_date');
@@ -42,9 +42,12 @@ class CustomerReturnTableQuery
     {
         return CustomerReturn::query()
             ->with([
-                'invoice:id,number,invoice_date', 'customer:id,code,name',
-                'cashBankAccount:id,code,name', 'returner:id,name',
-                'items.product:id,code,name,unit_id', 'items.product.unit:id,name,symbol',
+                'invoice:id,number,invoice_date',
+                'customer:id,code,name',
+                'cashBankAccount:id,code,name',
+                'returner:id,name',
+                'items.product:id,code,name,unit_id',
+                'items.product.unit:id,name,symbol',
             ])
             ->findOrFail($customerReturn->id);
     }

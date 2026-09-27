@@ -17,11 +17,11 @@ class PosSalesReportQuery
         return PosSale::query()
             ->where('company_id', $this->company->id())
             ->whereIn('status', ['completed', 'voided'])
-            ->when($filters['from_date'] ?? null, fn (Builder $query, string $date) => $query->where('sold_at', '>=', $date . ' 00:00:00'))
-            ->when($filters['to_date'] ?? null, fn (Builder $query, string $date) => $query->where('sold_at', '<=', $date . ' 23:59:59'))
-            ->when($filters['cashier_id'] ?? null, fn (Builder $query, int $id) => $query->where('cashier_id', $id))
-            ->when($filters['pos_session_id'] ?? null, fn (Builder $query, int $id) => $query->where('pos_session_id', $id))
-            ->when($filters['payment_method'] ?? null, fn (Builder $query, string $method) => $query->where('payment_method', $method))
+            ->when($filters['from_date'] ?? null, fn(Builder $query, string $date) => $query->where('sold_at', '>=', $date . ' 00:00:00'))
+            ->when($filters['to_date'] ?? null, fn(Builder $query, string $date) => $query->where('sold_at', '<=', $date . ' 23:59:59'))
+            ->when($filters['cashier_id'] ?? null, fn(Builder $query, int $id) => $query->where('cashier_id', $id))
+            ->when($filters['pos_session_id'] ?? null, fn(Builder $query, int $id) => $query->where('pos_session_id', $id))
+            ->when($filters['payment_method'] ?? null, fn(Builder $query, string $method) => $query->where('payment_method', $method))
             ->with([
                 'session:id,number,status',
                 'cashier:id,name',

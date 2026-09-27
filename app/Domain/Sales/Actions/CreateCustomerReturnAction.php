@@ -44,7 +44,7 @@ class CreateCustomerReturnAction
                 ->get()
                 ->keyBy('id');
             $returnItems = collect($data->items)
-                ->filter(fn (array $item) => (float) $item['quantity'] > 0)
+                ->filter(fn(array $item) => (float) $item['quantity'] > 0)
                 ->values();
             if ($returnItems->isEmpty()) {
                 throw ValidationException::withMessages(['items' => 'Masukkan jumlah untuk minimal satu barang retur.']);
@@ -61,7 +61,7 @@ class CreateCustomerReturnAction
                 }
             }
 
-            $productIds = $returnItems->map(fn (array $item) => (int) $invoiceItems->get((int) $item['sales_invoice_item_id'])->product_id)->unique()->sort()->values();
+            $productIds = $returnItems->map(fn(array $item) => (int) $invoiceItems->get((int) $item['sales_invoice_item_id'])->product_id)->unique()->sort()->values();
             $products = Product::query()->whereIn('id', $productIds)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
             $stocks = [];
             foreach ($productIds as $productId) {

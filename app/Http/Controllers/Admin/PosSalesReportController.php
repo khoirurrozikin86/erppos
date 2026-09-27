@@ -40,8 +40,22 @@ class PosSalesReportController extends Controller
             $output = fopen('php://output', 'w');
             fwrite($output, "\xEF\xBB\xBF");
             fputcsv($output, [
-                'No Transaksi', 'Tanggal', 'Kasir', 'Sesi POS', 'Kode Customer', 'Customer', 'Jumlah Item',
-                'Status', 'Alasan Void', 'Subtotal', 'Diskon', 'Pajak', 'Total', 'Dibayar', 'Kembalian', 'Metode Pembayaran',
+                'No Transaksi',
+                'Tanggal',
+                'Kasir',
+                'Sesi POS',
+                'Kode Customer',
+                'Customer',
+                'Jumlah Item',
+                'Status',
+                'Alasan Void',
+                'Subtotal',
+                'Diskon',
+                'Pajak',
+                'Total',
+                'Dibayar',
+                'Kembalian',
+                'Metode Pembayaran',
             ]);
             foreach ($sales as $sale) {
                 fputcsv($output, [

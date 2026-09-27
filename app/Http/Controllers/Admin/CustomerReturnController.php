@@ -27,7 +27,7 @@ class CustomerReturnController extends Controller
         $accounts = CashBankAccount::query()
             ->where('company_id', $company->id())
             ->where('is_active', true)
-            ->whereHas('chartOfAccount', fn ($query) => $query
+            ->whereHas('chartOfAccount', fn($query) => $query
                 ->where('company_id', $company->id())
                 ->where('is_active', true)
                 ->where('is_group', false)
@@ -43,11 +43,11 @@ class CustomerReturnController extends Controller
         $filters = $this->dateFilters($request);
 
         return DataTables::eloquent($query->builder($filters['from_date'] ?? null, $filters['to_date'] ?? null))
-            ->addColumn('invoice_number', fn (CustomerReturn $customerReturn) => $customerReturn->invoice?->number ?? '—')
-            ->addColumn('customer_name', fn (CustomerReturn $customerReturn) => $customerReturn->customer?->name ?? 'Customer dihapus')
-            ->addColumn('cash_account', fn (CustomerReturn $customerReturn) => $customerReturn->cashBankAccount?->name ?? 'Akun dihapus')
-            ->addColumn('returner_name', fn (CustomerReturn $customerReturn) => $customerReturn->returner?->name ?? 'User dihapus')
-            ->addColumn('actions', fn (CustomerReturn $customerReturn) => '<button type="button" class="btn btn-sm btn-outline-secondary btn-view-customer-return" data-url="' . e(route('super.customer-returns.show', $customerReturn)) . '" title="Lihat rincian"><i data-feather="eye"></i></button>'
+            ->addColumn('invoice_number', fn(CustomerReturn $customerReturn) => $customerReturn->invoice?->number ?? '—')
+            ->addColumn('customer_name', fn(CustomerReturn $customerReturn) => $customerReturn->customer?->name ?? 'Customer dihapus')
+            ->addColumn('cash_account', fn(CustomerReturn $customerReturn) => $customerReturn->cashBankAccount?->name ?? 'Akun dihapus')
+            ->addColumn('returner_name', fn(CustomerReturn $customerReturn) => $customerReturn->returner?->name ?? 'User dihapus')
+            ->addColumn('actions', fn(CustomerReturn $customerReturn) => '<button type="button" class="btn btn-sm btn-outline-secondary btn-view-customer-return" data-url="' . e(route('super.customer-returns.show', $customerReturn)) . '" title="Lihat rincian"><i data-feather="eye"></i></button>'
                 . ' <a class="btn btn-sm btn-outline-primary" href="' . e(route('super.customer-returns.pdf', $customerReturn)) . '" target="_blank" rel="noopener" title="Lihat PDF"><i data-feather="file-text" class="icon-sm"></i></a>'
                 . ' <a class="btn btn-sm btn-outline-secondary" href="' . e(route('super.customer-returns.pdf.download', $customerReturn)) . '" title="Unduh PDF"><i data-feather="download"></i></a>')
             ->rawColumns(['actions'])
@@ -57,8 +57,8 @@ class CustomerReturnController extends Controller
     public function eligible(CustomerReturnTableQuery $query): JsonResponse
     {
         return DataTables::eloquent($query->eligibleInvoices())
-            ->addColumn('customer_name', fn (SalesInvoice $invoice) => $invoice->customer?->name ?? 'Customer dihapus')
-            ->addColumn('actions', fn (SalesInvoice $invoice) => '<button type="button" class="btn btn-sm btn-primary btn-select-return-invoice" data-id="' . (int) $invoice->id . '"><i data-feather="check" class="icon-sm me-1"></i>Pilih</button>')
+            ->addColumn('customer_name', fn(SalesInvoice $invoice) => $invoice->customer?->name ?? 'Customer dihapus')
+            ->addColumn('actions', fn(SalesInvoice $invoice) => '<button type="button" class="btn btn-sm btn-primary btn-select-return-invoice" data-id="' . (int) $invoice->id . '"><i data-feather="check" class="icon-sm me-1"></i>Pilih</button>')
             ->rawColumns(['actions'])
             ->toJson();
     }
@@ -73,8 +73,8 @@ class CustomerReturnController extends Controller
             'customer' => $invoice->customer?->name ?? 'Customer dihapus',
             'date' => $invoice->invoice_date?->format('d/m/Y'),
             'items' => $invoice->items
-                ->filter(fn ($item) => (float) $item->quantity > (float) $item->returned_quantity)
-                ->map(fn ($item) => [
+                ->filter(fn($item) => (float) $item->quantity > (float) $item->returned_quantity)
+                ->map(fn($item) => [
                     'id' => $item->id,
                     'code' => $item->product?->code ?? '—',
                     'name' => $item->product?->name ?? 'Barang dihapus',
@@ -127,7 +127,7 @@ class CustomerReturnController extends Controller
             'subtotal' => (float) $customerReturn->subtotal,
             'tax_amount' => (float) $customerReturn->tax_amount,
             'total_amount' => (float) $customerReturn->total_amount,
-            'items' => $customerReturn->items->map(fn ($item) => [
+            'items' => $customerReturn->items->map(fn($item) => [
                 'code' => $item->product?->code ?? '—',
                 'name' => $item->product?->name ?? 'Barang dihapus',
                 'quantity' => number_format((float) $item->quantity, 4, ',', '.'),

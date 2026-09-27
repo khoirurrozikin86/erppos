@@ -29,8 +29,8 @@ class StockCardController extends Controller
     public function productsDt(StockCardQuery $query): JsonResponse
     {
         return DataTables::eloquent($query->products())
-            ->addColumn('unit_label', fn (Product $product) => $product->unit?->symbol ?: $product->unit?->name ?: '—')
-            ->addColumn('actions', fn (Product $product) => '<button type="button" class="btn btn-sm btn-primary btn-select-stock-product" data-id="' . (int) $product->id . '" data-code="' . e($product->code) . '" data-name="' . e($product->name) . '" data-unit="' . e($product->unit?->symbol ?: $product->unit?->name ?: '') . '"><i data-feather="check" class="icon-sm me-1"></i>Pilih</button>')
+            ->addColumn('unit_label', fn(Product $product) => $product->unit?->symbol ?: $product->unit?->name ?: '—')
+            ->addColumn('actions', fn(Product $product) => '<button type="button" class="btn btn-sm btn-primary btn-select-stock-product" data-id="' . (int) $product->id . '" data-code="' . e($product->code) . '" data-name="' . e($product->name) . '" data-unit="' . e($product->unit?->symbol ?: $product->unit?->name ?: '') . '"><i data-feather="check" class="icon-sm me-1"></i>Pilih</button>')
             ->rawColumns(['actions'])
             ->toJson();
     }
@@ -47,8 +47,8 @@ class StockCardController extends Controller
             $filters['from_date'] ?? null,
             $filters['to_date'] ?? null,
         ))
-            ->addColumn('reference_number', fn (StockMovement $movement) => $movement->goodsReceipt?->number ?? $movement->purchaseReturn?->number ?? $movement->customerReturn?->number ?? $movement->stockOpname?->number ?? $movement->delivery?->number ?? $movement->posSale?->number ?? '—')
-            ->addColumn('movement_label', fn (StockMovement $movement) => match ($movement->movement_type) {
+            ->addColumn('reference_number', fn(StockMovement $movement) => $movement->goodsReceipt?->number ?? $movement->purchaseReturn?->number ?? $movement->customerReturn?->number ?? $movement->stockOpname?->number ?? $movement->delivery?->number ?? $movement->posSale?->number ?? '—')
+            ->addColumn('movement_label', fn(StockMovement $movement) => match ($movement->movement_type) {
                 'purchase_receipt' => '<span class="badge bg-success">Penerimaan Barang</span>',
                 'purchase_return' => '<span class="badge bg-danger">Purchase Return</span>',
                 'customer_return' => '<span class="badge bg-success">Customer Return</span>',
@@ -58,10 +58,10 @@ class StockCardController extends Controller
                 'pos_sale' => '<span class="badge bg-danger">Penjualan POS</span>',
                 default => '<span class="badge bg-secondary">' . e(ucfirst(str_replace('_', ' ', $movement->movement_type))) . '</span>',
             })
-            ->addColumn('quantity_in', fn (StockMovement $movement) => (float) $movement->quantity > 0 ? number_format((float) $movement->quantity, 4, ',', '.') : '—')
-            ->addColumn('quantity_out', fn (StockMovement $movement) => (float) $movement->quantity < 0 ? number_format(abs((float) $movement->quantity), 4, ',', '.') : '—')
-            ->addColumn('balance_after', fn (StockMovement $movement) => number_format((float) $movement->quantity_after, 4, ',', '.'))
-            ->addColumn('unit_label', fn (StockMovement $movement) => $movement->product?->unit?->symbol ?: $movement->product?->unit?->name ?: '—')
+            ->addColumn('quantity_in', fn(StockMovement $movement) => (float) $movement->quantity > 0 ? number_format((float) $movement->quantity, 4, ',', '.') : '—')
+            ->addColumn('quantity_out', fn(StockMovement $movement) => (float) $movement->quantity < 0 ? number_format(abs((float) $movement->quantity), 4, ',', '.') : '—')
+            ->addColumn('balance_after', fn(StockMovement $movement) => number_format((float) $movement->quantity_after, 4, ',', '.'))
+            ->addColumn('unit_label', fn(StockMovement $movement) => $movement->product?->unit?->symbol ?: $movement->product?->unit?->name ?: '—')
             ->rawColumns(['movement_label'])
             ->toJson();
     }

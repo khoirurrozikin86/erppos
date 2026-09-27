@@ -81,10 +81,22 @@ class UsersAndPermissionsSeeder extends Seeder
         }
 
         Permission::whereIn('name', [
-            'outlets.view', 'outlets.create', 'outlets.update', 'outlets.delete',
-            'ticket-qrcode.view', 'ticket-qrcode.create', 'ticket-qrcode.update', 'ticket-qrcode.delete',
-            'user-outlets.view', 'user-outlets.create', 'user-outlets.update', 'user-outlets.delete',
-            'scan-records.view', 'scan-records.create', 'scan-records.update', 'scan-records.delete',
+            'outlets.view',
+            'outlets.create',
+            'outlets.update',
+            'outlets.delete',
+            'ticket-qrcode.view',
+            'ticket-qrcode.create',
+            'ticket-qrcode.update',
+            'ticket-qrcode.delete',
+            'user-outlets.view',
+            'user-outlets.create',
+            'user-outlets.update',
+            'user-outlets.delete',
+            'scan-records.view',
+            'scan-records.create',
+            'scan-records.update',
+            'scan-records.delete',
         ])->delete();
 
         // === 3️⃣ ROLE → PERMISSION MAPPING ===

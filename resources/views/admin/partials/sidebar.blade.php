@@ -112,7 +112,8 @@
 
 
             {{-- ================= MASTER ================= --}}
-            @canany(['categories.view', 'units.view', 'products.view', 'suppliers.view', 'customers.view', 'pricelists.view', 'company.view'])
+            @canany(['categories.view', 'units.view', 'products.view', 'suppliers.view', 'customers.view',
+                'pricelists.view', 'company.view'])
                 <li class="nav-item nav-category">MASTER</li>
             @endcanany
 
@@ -153,11 +154,14 @@
                         <span class="link-title">Harga / Pricelist</span>
                         <i class="link-arrow" data-feather="chevron-down"></i>
                     </a>
-                    <div class="collapse {{ request()->routeIs('super.pricelists.*') ? 'show' : '' }}" id="menu-pricelists">
-                        <ul class="nav sub-menu"><li class="nav-item">
-                            <a href="{{ route('super.pricelists.index') }}"
-                                class="nav-link {{ request()->routeIs('super.pricelists.index') ? 'active' : '' }}">Show</a>
-                        </li></ul>
+                    <div class="collapse {{ request()->routeIs('super.pricelists.*') ? 'show' : '' }}"
+                        id="menu-pricelists">
+                        <ul class="nav sub-menu">
+                            <li class="nav-item">
+                                <a href="{{ route('super.pricelists.index') }}"
+                                    class="nav-link {{ request()->routeIs('super.pricelists.index') ? 'active' : '' }}">Show</a>
+                            </li>
+                        </ul>
                     </div>
                 </li>
             @endcan
@@ -315,7 +319,8 @@
             @endcan
 
             {{-- ================= PURCHASING ================= --}}
-            @canany(['material-requests.view', 'purchase-requests.view', 'purchase-orders.view', 'goods-receipts.view', 'purchase-returns.view'])
+            @canany(['material-requests.view', 'purchase-requests.view', 'purchase-orders.view', 'goods-receipts.view',
+                'purchase-returns.view'])
                 <li class="nav-item nav-category">PURCHASING</li>
             @endcanany
             @can('material-requests.view')
@@ -365,7 +370,8 @@
             @endcan
 
             {{-- ================= SALES ================= --}}
-            @canany(['sales-quotations.view', 'sales-orders.view', 'deliveries.view', 'sales-invoices.view', 'customer-returns.view'])
+            @canany(['sales-quotations.view', 'sales-orders.view', 'deliveries.view', 'sales-invoices.view',
+                'customer-returns.view'])
                 <li class="nav-item nav-category">SALES</li>
             @endcanany
             @can('sales-quotations.view')
@@ -379,29 +385,34 @@
             @endcan
             @can('sales-orders.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.sales-orders.*') ? 'active' : '' }}" href="{{ route('super.sales-orders.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.sales-orders.*') ? 'active' : '' }}"
+                        href="{{ route('super.sales-orders.index') }}">
                         <i class="link-icon" data-feather="shopping-cart"></i><span class="link-title">Sales Order</span>
                     </a>
                 </li>
             @endcan
             @can('deliveries.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.deliveries.*') ? 'active' : '' }}" href="{{ route('super.deliveries.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.deliveries.*') ? 'active' : '' }}"
+                        href="{{ route('super.deliveries.index') }}">
                         <i class="link-icon" data-feather="truck"></i><span class="link-title">Delivery</span>
                     </a>
                 </li>
             @endcan
             @can('sales-invoices.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.sales-invoices.*') ? 'active' : '' }}" href="{{ route('super.sales-invoices.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.sales-invoices.*') ? 'active' : '' }}"
+                        href="{{ route('super.sales-invoices.index') }}">
                         <i class="link-icon" data-feather="file-text"></i><span class="link-title">Sales Invoice</span>
                     </a>
                 </li>
             @endcan
             @can('customer-returns.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.customer-returns.*') ? 'active' : '' }}" href="{{ route('super.customer-returns.index') }}">
-                        <i class="link-icon" data-feather="corner-down-left"></i><span class="link-title">Customer Return</span>
+                    <a class="nav-link {{ request()->routeIs('super.customer-returns.*') ? 'active' : '' }}"
+                        href="{{ route('super.customer-returns.index') }}">
+                        <i class="link-icon" data-feather="corner-down-left"></i><span class="link-title">Customer
+                            Return</span>
                     </a>
                 </li>
             @endcan
@@ -411,96 +422,115 @@
             @endcanany
             @can('pos.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.pos.*') ? 'active' : '' }}" href="{{ route('super.pos.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.pos.*') ? 'active' : '' }}"
+                        href="{{ route('super.pos.index') }}">
                         <i class="link-icon" data-feather="shopping-bag"></i><span class="link-title">Kasir</span>
                     </a>
                 </li>
             @endcan
             @can('pos-sessions.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.pos-sessions.*') ? 'active' : '' }}" href="{{ route('super.pos-sessions.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.pos-sessions.*') ? 'active' : '' }}"
+                        href="{{ route('super.pos-sessions.index') }}">
                         <i class="link-icon" data-feather="monitor"></i><span class="link-title">Sesi Kasir</span>
                     </a>
                 </li>
             @endcan
 
-            @canany(['chart-of-accounts.view', 'journal.view', 'account-receivable.view', 'account-payable.view', 'cash-bank.view'])
+            @canany(['chart-of-accounts.view', 'journal.view', 'account-receivable.view', 'account-payable.view',
+                'cash-bank.view'])
                 <li class="nav-item nav-category">ACCOUNTING</li>
             @endcanany
             @can('chart-of-accounts.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.chart-of-accounts.*') ? 'active' : '' }}" href="{{ route('super.chart-of-accounts.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.chart-of-accounts.*') ? 'active' : '' }}"
+                        href="{{ route('super.chart-of-accounts.index') }}">
                         <i class="link-icon" data-feather="list"></i><span class="link-title">Chart of Accounts</span>
                     </a>
                 </li>
             @endcan
             @can('journal.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.journals.*') ? 'active' : '' }}" href="{{ route('super.journals.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.journals.*') ? 'active' : '' }}"
+                        href="{{ route('super.journals.index') }}">
                         <i class="link-icon" data-feather="book-open"></i><span class="link-title">Journal</span>
                     </a>
                 </li>
             @endcan
             @can('account-receivable.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.account-receivable.*') ? 'active' : '' }}" href="{{ route('super.account-receivable.index') }}">
-                        <i class="link-icon" data-feather="credit-card"></i><span class="link-title">Account Receivable</span>
+                    <a class="nav-link {{ request()->routeIs('super.account-receivable.*') ? 'active' : '' }}"
+                        href="{{ route('super.account-receivable.index') }}">
+                        <i class="link-icon" data-feather="credit-card"></i><span class="link-title">Account
+                            Receivable</span>
                     </a>
                 </li>
             @endcan
             @can('account-payable.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.account-payable.*') ? 'active' : '' }}" href="{{ route('super.account-payable.index') }}">
-                        <i class="link-icon" data-feather="credit-card"></i><span class="link-title">Account Payable</span>
+                    <a class="nav-link {{ request()->routeIs('super.account-payable.*') ? 'active' : '' }}"
+                        href="{{ route('super.account-payable.index') }}">
+                        <i class="link-icon" data-feather="credit-card"></i><span class="link-title">Account
+                            Payable</span>
                     </a>
                 </li>
             @endcan
             @can('cash-bank.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.cash-bank.*') ? 'active' : '' }}" href="{{ route('super.cash-bank.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.cash-bank.*') ? 'active' : '' }}"
+                        href="{{ route('super.cash-bank.index') }}">
                         <i class="link-icon" data-feather="briefcase"></i><span class="link-title">Cash &amp; Bank</span>
                     </a>
                 </li>
             @endcan
-            @canany(['profit-loss.view', 'sales-report.view', 'purchase-report.view', 'inventory-report.view', 'cash-bank-report.view'])
+            @canany(['profit-loss.view', 'sales-report.view', 'purchase-report.view', 'inventory-report.view',
+                'cash-bank-report.view'])
                 <li class="nav-item nav-category">REPORT</li>
             @endcanany
             @can('purchase-report.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.reports.purchase.*') ? 'active' : '' }}" href="{{ route('super.reports.purchase.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.reports.purchase.*') ? 'active' : '' }}"
+                        href="{{ route('super.reports.purchase.index') }}">
                         <i class="link-icon" data-feather="shopping-cart"></i><span class="link-title">Pembelian</span>
                     </a>
                 </li>
             @endcan
             @can('inventory-report.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.reports.inventory.*') ? 'active' : '' }}" href="{{ route('super.reports.inventory.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.reports.inventory.*') ? 'active' : '' }}"
+                        href="{{ route('super.reports.inventory.index') }}">
                         <i class="link-icon" data-feather="package"></i><span class="link-title">Inventory</span>
                     </a>
                 </li>
             @endcan
             @can('cash-bank-report.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.reports.cash-bank.*') ? 'active' : '' }}" href="{{ route('super.reports.cash-bank.index') }}">
-                        <i class="link-icon" data-feather="dollar-sign"></i><span class="link-title">Kas &amp; Bank</span>
+                    <a class="nav-link {{ request()->routeIs('super.reports.cash-bank.*') ? 'active' : '' }}"
+                        href="{{ route('super.reports.cash-bank.index') }}">
+                        <i class="link-icon" data-feather="dollar-sign"></i><span class="link-title">Kas &amp;
+                            Bank</span>
                     </a>
                 </li>
             @endcan
             @can('sales-report.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.reports.sales.*') ? 'active' : '' }}" href="{{ route('super.reports.sales.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.reports.sales.*') ? 'active' : '' }}"
+                        href="{{ route('super.reports.sales.index') }}">
                         <i class="link-icon" data-feather="bar-chart-2"></i><span class="link-title">Penjualan</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.reports.pos-sales.*') ? 'active' : '' }}" href="{{ route('super.reports.pos-sales.index') }}">
-                        <i class="link-icon" data-feather="shopping-bag"></i><span class="link-title">Penjualan POS</span>
+                    <a class="nav-link {{ request()->routeIs('super.reports.pos-sales.*') ? 'active' : '' }}"
+                        href="{{ route('super.reports.pos-sales.index') }}">
+                        <i class="link-icon" data-feather="shopping-bag"></i><span class="link-title">Penjualan
+                            POS</span>
                     </a>
                 </li>
             @endcan
             @can('profit-loss.view')
                 <li class="nav-item">
-                    <a class="nav-link {{ request()->routeIs('super.profit-loss.*') ? 'active' : '' }}" href="{{ route('super.profit-loss.index') }}">
+                    <a class="nav-link {{ request()->routeIs('super.profit-loss.*') ? 'active' : '' }}"
+                        href="{{ route('super.profit-loss.index') }}">
                         <i class="link-icon" data-feather="trending-up"></i><span class="link-title">Laba Rugi</span>
                     </a>
                 </li>
