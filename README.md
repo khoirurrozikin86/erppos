@@ -1,175 +1,130 @@
-# 🎟️ ScanTiket
+# ERP POS
 
-**ScanTiket** adalah sistem manajemen dan validasi tiket berbasis QR Code yang digunakan untuk melakukan proses scanning tiket pada berbagai outlet atau wahana.
+Aplikasi ERP untuk mengelola data operasional, persediaan, pembelian, penjualan, kas/bank, dan akuntansi dalam satu sistem.
 
-Sistem mendukung **Camera Scanner** dan **Barcode Scanner**, dilengkapi dengan sistem permission berdasarkan outlet, pencatatan histori scan, laporan transaksi, filtering berdasarkan tanggal, serta export data ke Excel.
+## Modul
 
----
+- **Master data:** perusahaan, kategori, satuan, produk, supplier, customer, dan daftar harga.
+- **Pembelian:** permintaan pembelian, purchase order, penerimaan barang, dan retur pembelian.
+- **Persediaan:** stok, kartu stok, stock opname, serta laporan persediaan.
+- **Penjualan:** quotation, sales order, pengiriman, invoice, dan piutang.
+- **POS:** sesi kasir, transaksi penjualan, pengurangan stok, dan pencatatan biaya pokok.
+- **Keuangan dan akuntansi:** kas/bank, utang, akun, jurnal, dan laporan laba rugi.
+- **Administrasi:** dashboard, pengaturan, pengguna, role, permission, dan audit log.
 
-## ✨ Features
+## Flow Operasional Pembelian hingga POS
 
-### 📷 Camera Scanner
+### 1. Siapkan master barang
 
-Melakukan scanning QR Code menggunakan kamera perangkat.
+Buat produk dan lengkapi nama, kategori, satuan, harga jual, serta harga beli. Pastikan produk aktif dan pengaturan penjualannya sesuai.
 
-- Scan QR Code menggunakan kamera
-- Pemilihan outlet sebelum melakukan scan
-- Proses validasi tiket secara otomatis
-- Notifikasi tiket valid atau ditolak
-- Otomatis mencatat waktu scan
-- Menampilkan 10 scan terakhir
-- Scan method tersimpan sebagai `camera`
+### 2. Buat purchase order
 
----
-
-### 🔳 Barcode Scanner
-
-Mendukung barcode scanner yang bekerja seperti keyboard input.
-
-- Scan barcode menggunakan perangkat scanner
-- Tidak diperuntukkan untuk input manual
-- Validasi tiket secara realtime
-- Pemilihan outlet
-- Notifikasi hasil scanning
-- Otomatis membersihkan input setelah scan
-- Scan method tersimpan sebagai `scanner`
-
----
-
-### 🎫 Ticket Validation
-
-Sistem melakukan validasi terhadap tiket sebelum menerima scan.
-
-Validasi mencakup:
-
-- QR Code / barcode tiket
-- Nomor tiket
-- Jenis tiket
-- Status tiket
-- Outlet yang melakukan scan
-- Riwayat penggunaan tiket
-
-### 🔒 One-Time Ticket Usage
-
-Setiap tiket hanya dapat digunakan **satu kali**.
-
-Contoh:
-
-```text
-Tiket 103501
-        ↓
-Scan di Wahana A
-        ↓
-VALID
-        ↓
-Tiket menjadi USED
-        ↓
-Scan kembali di Wahana A
-        ↓
-DITOLAK
-        ↓
-Scan di Wahana B
-        ↓
-DITOLAK
-```
-
----
-
-## 🔄 Flow Operasional ERP
-
-Flow berikut merupakan prosedur yang benar untuk menjaga data persediaan dan biaya pokok produk tetap valid sebelum barang dijual lewat POS.
-
-### 1. Kelola master barang
-
-Sebelum transaksi jual, pastikan produk sudah tersedia di master data.
-
-- Isi nama barang
-- Pilih kategori dan satuan
-- Isi harga beli
-- Pastikan produk aktif dan bisa dijual
-- Jika produk menggunakan stok, aktifkan tracking stok
-
-### 2. Buat Purchase Order
-
-Setelah kebutuhan pembelian diketahui, buat PO ke supplier.
-
-- Pilih supplier
-- Tambahkan produk yang dibeli
-- Tentukan kuantitas dan harga unit
-- Simpan PO
+Pilih supplier, masukkan produk dan kuantitas yang akan dibeli, lalu simpan PO.
 
 ### 3. Catat penerimaan barang
 
-Penerimaan barang adalah langkah yang wajib sebelum item bisa dijual.
+Dari PO, masukkan kuantitas barang yang benar-benar diterima. Setelah penerimaan dicatat, sistem menambah stok dan memperbarui biaya rata-rata persediaan (`average_unit_cost`).
 
-Prosesnya:
+### 4. Jual melalui POS
 
-- Buka modul Penerimaan Barang
-- Pilih PO yang sudah dibuat
-- Masukkan qty yang benar-benar diterima
-- Simpan penerimaan
+Setelah stok tersedia, lakukan transaksi di POS. Sistem memvalidasi ketersediaan stok dan biaya persediaan, lalu mencatat penjualan, mengurangi stok, dan menghitung biaya pokok penjualan.
 
-Saat penerimaan disimpan, sistem akan:
-
-- menambah stok barang
-- menghitung biaya rata-rata persediaan
-- mengisi data `average_unit_cost` / biaya persediaan
-
-### 4. Baru lalu barang bisa dijual di POS
-
-Setelah stok dan biaya persediaan tersedia, transaksi POS dapat dilakukan.
-
-Persyaratan agar POS bisa checkout:
-
-- produk aktif
-- `allow_sales` aktif
-- stok cukup
-- biaya persediaan tersedia
-- harga jual produk sudah diatur
-
-### 5. Penjualan POS
-
-Pada saat checkout POS, sistem akan otomatis:
-
-- mengurangi stok barang
-- menghitung biaya pokok penjualan
-- mencatat stock movement
-- menjurnal transaksi terkait
-
-### 6. Aturan penting
-
-Jika muncul pesan:
-
-```text
-Biaya persediaan [KODE] belum tersedia. Isi harga beli atau catat penerimaan lebih dahulu.
-```
-
-maka artinya:
-
-- barang belum pernah masuk stok secara valid, atau
-- harga beli masih kosong, atau
-- penerimaan barang belum dicatat
-
-Solusi:
-
-1. isi harga beli produk, atau
-2. catat penerimaan barang dari supplier, lalu
-3. ulangi proses penjualan
-
----
-
-## 📌 Ringkasan flow
+> Jika POS menampilkan pesan bahwa biaya persediaan belum tersedia, periksa harga beli produk dan pastikan penerimaan barang sudah dicatat. Stok tanpa biaya yang valid tidak dapat digunakan untuk transaksi POS.
 
 ```text
 Master Barang
     ↓
-Buat Purchase Order
+Purchase Order
     ↓
-Catat Penerimaan Barang
+Penerimaan Barang
     ↓
-Stok + biaya persediaan tersedia
+Stok dan biaya persediaan tersedia
     ↓
-Jual melalui POS
+Penjualan melalui POS
 ```
 
-Ini penting agar harga pokok penjualan tetap akurat dan laporan persediaan tidak salah.
+## Teknologi
+
+- PHP 8.2 atau lebih baru
+- Laravel 12
+- Composer
+- Node.js dan npm
+- Database SQLite atau MySQL
+
+## Menjalankan Secara Lokal
+
+1. Pasang dependensi PHP dan JavaScript:
+
+   ```bash
+   composer install
+   npm install
+   ```
+
+2. Siapkan file environment dan application key:
+
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+3. Atur koneksi database pada `.env`.
+
+   Konfigurasi contoh menggunakan SQLite. Buat file database jika belum ada:
+
+   ```bash
+   touch database/database.sqlite
+   ```
+
+   Pastikan `.env` berisi:
+
+   ```dotenv
+   DB_CONNECTION=sqlite
+   DB_DATABASE=/absolute/path/to/project/database/database.sqlite
+   ```
+
+   Untuk MySQL, atur `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, dan `DB_PASSWORD` sesuai database lokal.
+
+4. Jalankan migrasi dan siapkan data pengguna serta permission:
+
+   ```bash
+   php artisan migrate
+   php artisan db:seed --class=UsersAndPermissionsSeeder
+   ```
+
+   Seeder data awal lain tersedia di `database/seeders`; jalankan seeder yang dibutuhkan sesuai lingkungan.
+
+5. Jalankan aplikasi dan Vite di terminal terpisah:
+
+   ```bash
+   php artisan serve
+   ```
+
+   ```bash
+   npm run dev
+   ```
+
+   Buka URL yang ditampilkan oleh `php artisan serve`.
+
+## Build Asset dan Pengujian
+
+Build asset untuk penggunaan tanpa Vite dev server:
+
+```bash
+npm run build
+```
+
+Jalankan test suite:
+
+```bash
+php artisan test
+```
+
+## Struktur Direktori
+
+- `app/Domain/` — logika domain untuk pembelian, persediaan, POS, penjualan, akuntansi, dan modul lainnya.
+- `app/Http/Controllers/` — controller aplikasi.
+- `database/migrations/` — skema database.
+- `database/seeders/` — data awal.
+- `resources/views/` — tampilan Blade.
+- `routes/` — definisi route aplikasi.
