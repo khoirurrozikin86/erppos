@@ -13,7 +13,9 @@ class ProductTableQuery
             ->with([
                 'category:id,name',
                 'unit:id,name,symbol',
-                'primaryImage:id,product_id,path,file_name',
+                'images:id,product_id,path,file_name,is_primary,sort_order',
+                'primaryImage:id,product_id,path,file_name,is_primary,sort_order',
+                'stock:product_id,quantity',
             ])
             ->select([
                 'id',

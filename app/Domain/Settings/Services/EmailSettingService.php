@@ -4,6 +4,8 @@ namespace App\Domain\Settings\Services;
 
 use App\Domain\Companies\Services\CompanyContext;
 use App\Models\EmailSetting;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\ValidationException;
 
 class EmailSettingService
 {
@@ -43,5 +45,31 @@ class EmailSettingService
         $setting->update($data);
 
         return $setting->refresh();
+    }
+
+    public function configureMailer(): EmailSetting
+    {
+        $setting = $this->get();
+
+        if (!$setting->is_active || !$setting->mail_host || !$setting->from_email) {
+            throw ValidationException::withMessages([
+                'email' => 'Aktifkan dan lengkapi Email Setting sebelum mengirim email.',
+            ]);
+        }
+
+        config([
+            'mail.default' => $setting->mail_mailer,
+            "mail.mailers.{$setting->mail_mailer}.host" => $setting->mail_host,
+            "mail.mailers.{$setting->mail_mailer}.port" => $setting->mail_port,
+            "mail.mailers.{$setting->mail_mailer}.username" => $setting->mail_username,
+            "mail.mailers.{$setting->mail_mailer}.password" => $setting->mail_password,
+            "mail.mailers.{$setting->mail_mailer}.encryption" => $setting->mail_encryption,
+            'mail.from.address' => $setting->from_email,
+            'mail.from.name' => $setting->from_name,
+        ]);
+
+        Mail::purge($setting->mail_mailer);
+
+        return $setting;
     }
 }

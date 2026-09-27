@@ -26,10 +26,6 @@ class UsersAndPermissionsSeeder extends Seeder
             'user'       => ['menu', 'create', 'read', 'update', 'delete'],
             'role'       => ['menu', 'create', 'read', 'update', 'delete'],
             'permission' => ['menu', 'create', 'read', 'update', 'delete'],
-            'outlets'    => ['view', 'create', 'update', 'delete'],
-            'ticket-qrcode' => ['view', 'create', 'update', 'delete'],
-            'user-outlets' => ['view', 'create', 'update', 'delete'],
-            'scan-records' => ['view', 'create', 'update', 'delete'],
             'audit-logs' => ['view', 'create', 'update', 'delete'],
             'company' => ['view', 'create', 'update', 'delete'],
             'general-settings' => ['view', 'update'],
@@ -40,6 +36,31 @@ class UsersAndPermissionsSeeder extends Seeder
             'suppliers' => ['view', 'create', 'update', 'delete'],
             'customers' => ['view', 'create', 'update', 'delete'],
             'products' => ['view', 'create', 'update', 'delete'],
+            'pricelists' => ['view', 'create', 'update', 'delete'],
+            'material-requests' => ['view', 'create', 'approve'],
+            'purchase-requests' => ['view', 'create', 'approve'],
+            'purchase-orders' => ['view', 'create', 'issue', 'email'],
+            'goods-receipts' => ['view', 'create'],
+            'purchase-returns' => ['view', 'create'],
+            'sales-quotations' => ['view', 'create', 'issue', 'review', 'email'],
+            'sales-orders' => ['view', 'create', 'confirm'],
+            'deliveries' => ['view', 'create', 'post'],
+            'sales-invoices' => ['view', 'create', 'issue', 'email'],
+            'account-receivable' => ['view', 'receive'],
+            'account-payable' => ['view', 'pay'],
+            'pos-sessions' => ['view', 'open', 'close'],
+            'pos' => ['view', 'sell'],
+            'cash-bank' => ['view', 'create', 'update', 'delete'],
+            'chart-of-accounts' => ['view', 'create', 'update'],
+            'journal' => ['view', 'create', 'post', 'delete'],
+            'profit-loss' => ['view'],
+            'sales-report' => ['view'],
+            'purchase-report' => ['view'],
+            'inventory-report' => ['view'],
+            'cash-bank-report' => ['view'],
+            'stocks' => ['view'],
+            'stock-card' => ['view'],
+            'stock-opnames' => ['view', 'create', 'count', 'post'],
 
 
 
@@ -58,18 +79,18 @@ class UsersAndPermissionsSeeder extends Seeder
             }
         }
 
+        Permission::whereIn('name', [
+            'outlets.view', 'outlets.create', 'outlets.update', 'outlets.delete',
+            'ticket-qrcode.view', 'ticket-qrcode.create', 'ticket-qrcode.update', 'ticket-qrcode.delete',
+            'user-outlets.view', 'user-outlets.create', 'user-outlets.update', 'user-outlets.delete',
+            'scan-records.view', 'scan-records.create', 'scan-records.update', 'scan-records.delete',
+        ])->delete();
+
         // === 3️⃣ ROLE → PERMISSION MAPPING ===
 
         // 👤 USER: hanya bisa lihat (read/view)
         $roles['user']->syncPermissions([
             'dashboard.view',
-            'outlets.view',
-            'ticket-qrcode.view',
-            'user-outlets.view',
-            'scan-records.view',
-            'scan-records.create',
-            'scan-records.update',
-            'scan-records.delete',
             'audit-logs.view',
             'company.view',
             'company.create',
@@ -83,6 +104,9 @@ class UsersAndPermissionsSeeder extends Seeder
             'suppliers.view',
             'customers.view',
             'products.view',
+            'pricelists.view',
+            'material-requests.view',
+            'material-requests.create',
 
         ]);
 
@@ -102,27 +126,6 @@ class UsersAndPermissionsSeeder extends Seeder
             // 'role.delete',
 
 
-
-
-            'outlets.view',
-            'outlets.create',
-            'outlets.update',
-            'outlets.delete',
-
-            'ticket-qrcode.view',
-            'ticket-qrcode.create',
-            'ticket-qrcode.update',
-            'ticket-qrcode.delete',
-
-            'user-outlets.view',
-            'user-outlets.create',
-            'user-outlets.update',
-            'user-outlets.delete',
-
-            'scan-records.view',
-            'scan-records.create',
-            'scan-records.update',
-            'scan-records.delete',
 
 
             'audit-logs.view',
@@ -168,6 +171,67 @@ class UsersAndPermissionsSeeder extends Seeder
             'products.create',
             'products.update',
             'products.delete',
+
+            'pricelists.view',
+            'pricelists.create',
+            'pricelists.update',
+            'pricelists.delete',
+
+            'material-requests.view',
+            'material-requests.create',
+            'material-requests.approve',
+            'purchase-requests.view',
+            'purchase-requests.create',
+            'purchase-requests.approve',
+            'purchase-orders.view',
+            'purchase-orders.create',
+            'purchase-orders.issue',
+            'purchase-orders.email',
+            'goods-receipts.view',
+            'goods-receipts.create',
+            'purchase-returns.view',
+            'purchase-returns.create',
+            'sales-quotations.view',
+            'sales-quotations.create',
+            'sales-quotations.issue',
+            'sales-quotations.review',
+            'sales-quotations.email',
+            'sales-orders.view',
+            'sales-orders.create',
+            'sales-orders.confirm',
+            'deliveries.view',
+            'deliveries.create',
+            'deliveries.post',
+            'sales-invoices.view',
+            'sales-invoices.create',
+            'sales-invoices.issue',
+            'sales-invoices.email',
+            'account-receivable.view',
+            'account-receivable.receive',
+            'account-payable.view',
+            'account-payable.pay',
+            'pos-sessions.view',
+            'pos-sessions.open',
+            'pos-sessions.close',
+            'pos.view',
+            'pos.sell',
+            'cash-bank.view',
+            'cash-bank.create',
+            'cash-bank.update',
+            'cash-bank.delete',
+            'chart-of-accounts.view',
+            'chart-of-accounts.create',
+            'chart-of-accounts.update',
+            'journal.view',
+            'journal.create',
+            'journal.post',
+            'journal.delete',
+            'stocks.view',
+            'stock-card.view',
+            'stock-opnames.view',
+            'stock-opnames.create',
+            'stock-opnames.count',
+            'stock-opnames.post',
 
 
 

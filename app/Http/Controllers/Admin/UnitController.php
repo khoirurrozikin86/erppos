@@ -8,6 +8,12 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UnitStoreRequest;
 use App\Http\Requests\Admin\UnitUpdateRequest;
 use App\Models\Unit;
+use App\Exports\UnitsTemplateExport;
+use App\Exports\UnitsExport;
+use App\Imports\UnitsImport;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use Yajra\DataTables\Facades\DataTables;
 
 class UnitController extends Controller
@@ -15,6 +21,37 @@ class UnitController extends Controller
     public function index()
     {
         return view('super.units.index');
+    }
+
+    public function template()
+    {
+        return Excel::download(new UnitsTemplateExport(), 'template-satuan.xlsx');
+    }
+
+    public function export()
+    {
+        return Excel::download(new UnitsExport(), 'satuan-' . now()->format('Y-m-d-His') . '.xlsx');
+    }
+
+    public function import(Request $request, UnitService $service)
+    {
+        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240']]);
+
+        try {
+            Excel::import(new UnitsImport($service), $request->file('file'));
+        } catch (ExcelValidationException $exception) {
+            $message = collect($exception->failures())
+                ->map(fn ($failure) => 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors()))
+                ->take(10)
+                ->implode(' | ');
+
+            return back()->withErrors(['file' => $message ?: 'Data satuan pada file tidak valid.']);
+        } catch (\Throwable $exception) {
+            report($exception);
+            return back()->withErrors(['file' => 'Import gagal. Pastikan kode satuan tidak duplikat dan format file sesuai template.']);
+        }
+
+        return redirect()->route('super.units.index')->with('unit_import_success', 'Data satuan berhasil diimpor.');
     }
 
     public function dt(UnitTableQuery $q)

@@ -1,7 +1,26 @@
 @extends('layouts.admin')
 
+@section('title', 'customers')
+
+@section('breadcrumb')
+    <nav class="page-breadcrumb">
+        <ol class="breadcrumb">
+
+            <li class="breadcrumb-item">
+                <a href="#">Master</a>
+            </li>
+
+            <li class="breadcrumb-item active" aria-current="page">
+                Customers
+            </li>
+
+        </ol>
+    </nav>
+@endsection
+
+
 @section('content')
-    <div class="page-content">
+    <div class="row">
 
         {{-- HEADER --}}
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -16,6 +35,10 @@
             <div class="d-flex gap-2">
 
                 @can('customers.view')
+                    <a href="{{ route('super.customers.template') }}" class="btn btn-outline-secondary">
+                        <i data-feather="file-text" class="icon-sm me-1"></i>
+                        Template
+                    </a>
                     <a href="{{ route('super.customers.export') }}" class="btn btn-success">
 
                         <i data-feather="download" class="icon-sm me-1">
@@ -28,6 +51,10 @@
 
 
                 @can('customers.create')
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#customerImportModal">
+                        <i data-feather="upload" class="icon-sm me-1"></i>
+                        Import Excel
+                    </button>
                     <button type="button" class="btn btn-primary" id="btn-add-customer">
 
                         <i data-feather="plus" class="icon-sm me-1">
@@ -41,6 +68,19 @@
             </div>
 
         </div>
+
+        @if (session('customer_import_success'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: @json(session('customer_import_success')),
+                        confirmButtonText: 'OK'
+                    });
+                });
+            </script>
+        @endif
 
 
         {{-- TABLE --}}
@@ -75,6 +115,39 @@
 
         </div>
 
+    </div>
+
+    {{-- MODAL IMPORT CUSTOMER --}}
+    <div class="modal fade" id="customerImportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('super.customers.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title">Import Customer</h5>
+                            <small class="text-muted">Pilih file yang sudah diisi menggunakan template customer.</small>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <div class="modal-body">
+                        @error('file')
+                            <div class="alert alert-danger">{{ $message }}</div>
+                        @enderror
+                        <label for="customer-import-file" class="form-label">File Excel atau CSV</label>
+                        <input type="file" id="customer-import-file" name="file" class="form-control"
+                            accept=".xlsx,.xls,.csv" required>
+                        <div class="form-text">Format XLSX, XLS, atau CSV. Maksimal 10 MB. Kode customer harus unik.</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i data-feather="upload" class="icon-sm me-1"></i> Import Customer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
 
@@ -466,6 +539,10 @@
 @push('scripts')
     <script>
         $(function() {
+
+            @if ($errors->has('file'))
+                new bootstrap.Modal(document.getElementById('customerImportModal')).show();
+            @endif
 
             /*
             |--------------------------------------------------------------------------
@@ -960,8 +1037,7 @@
                         notes: $('#customer-notes').val(),
 
                         is_active: $('#customer-active').is(':checked') ?
-                            1 :
-                            0
+                            1 : 0
 
                     };
 

@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Admin;
 use App\Domain\Customers\Queries\CustomerTableQuery;
 use App\Domain\Customers\Services\CustomerService;
 use App\Exports\CustomersExport;
+use App\Exports\CustomersTemplateExport;
+use App\Imports\CustomersImport;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CustomerStoreRequest;
 use App\Http\Requests\Admin\CustomerUpdateRequest;
 use App\Models\Customer;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
 class CustomerController extends Controller
@@ -97,6 +101,34 @@ class CustomerController extends Controller
             new CustomersExport,
             'customers-' . now()->format('Y-m-d-His') . '.xlsx'
         );
+    }
+
+    public function template()
+    {
+        return Excel::download(new CustomersTemplateExport(), 'template-customer.xlsx');
+    }
+
+    public function import(Request $request, CustomerService $service)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
+        ]);
+
+        try {
+            Excel::import(new CustomersImport($service), $request->file('file'));
+        } catch (ExcelValidationException $exception) {
+            $message = collect($exception->failures())
+                ->map(fn ($failure) => 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors()))
+                ->take(10)
+                ->implode(' | ');
+
+            return back()->withErrors(['file' => $message ?: 'Data customer pada file tidak valid.']);
+        } catch (\Throwable $exception) {
+            report($exception);
+            return back()->withErrors(['file' => 'Import gagal. Pastikan kode customer tidak duplikat dan format file sesuai template.']);
+        }
+
+        return redirect()->route('super.customers.index')->with('customer_import_success', 'Data customer berhasil diimpor.');
     }
 
     public function store(

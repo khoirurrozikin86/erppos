@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Kategori')
+@section('title', 'category')
 
 @section('breadcrumb')
     <nav class="page-breadcrumb">
@@ -11,7 +11,7 @@
             </li>
 
             <li class="breadcrumb-item active" aria-current="page">
-                Kategori
+                Category
             </li>
 
         </ol>
@@ -24,230 +24,278 @@
         HEADER
     ========================== --}}
 
-    <div class="page-header">
+    <div class="row">
 
-        <div>
-            <h4 class="page-title mb-1">
-                Kategori
-            </h4>
 
-            <span class="text-muted">
-                Master data kategori barang
-            </span>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+                <h4 class="page-title mb-1">
+                    Category
+                </h4>
+
+                <span class="text-muted">
+                    Master data kategori barang
+                </span>
+            </div>
+
+            <div class="d-flex gap-2">
+                @can('categories.view')
+                    <a href="{{ route('super.categories.template') }}" class="btn btn-outline-secondary">
+                        <i data-feather="file-text" class="icon-sm me-1"></i> Template
+                    </a>
+                    <a href="{{ route('super.categories.export') }}" class="btn btn-success">
+                        <i data-feather="download" class="icon-sm me-1"></i> Export Excel
+                    </a>
+                @endcan
+                @can('categories.create')
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#categoryImportModal">
+                        <i data-feather="upload" class="icon-sm me-1"></i> Import Excel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-add-category">
+                        <i data-feather="plus" class="icon-sm me-1"></i> Tambah Kategori
+                    </button>
+                @endcan
+            </div>
+
         </div>
 
-        @can('categories.create')
-            <button type="button" class="btn btn-primary" id="btn-add-category">
-
-                <i data-feather="plus" class="me-1"></i>
-
-                Tambah Kategori
-
-            </button>
-        @endcan
-
-    </div>
 
 
-    {{-- =========================
+
+        {{-- =========================
         TABLE
     ========================== --}}
 
-    <div class="card">
+        <div class="card">
 
-        <div class="card-body">
+            <div class="card-body">
 
-            <div class="table-responsive">
+                <div class="table-responsive">
 
-                <table id="categories-table" class="table table-bordered table-hover align-middle w-100">
+                    <table id="categories-table" class="table table-bordered table-hover align-middle w-100">
 
-                    <thead>
+                        <thead>
 
-                        <tr>
+                            <tr>
 
-                            <th width="5%">
-                                No
-                            </th>
+                                <th width="5%">
+                                    No
+                                </th>
 
-                            <th width="15%">
-                                Code
-                            </th>
+                                <th width="15%">
+                                    Code
+                                </th>
 
-                            <th>
-                                Nama
-                            </th>
+                                <th>
+                                    Nama
+                                </th>
 
-                            <th>
-                                Deskripsi
-                            </th>
+                                <th>
+                                    Deskripsi
+                                </th>
 
-                            <th width="10%">
-                                Status
-                            </th>
+                                <th width="10%">
+                                    Status
+                                </th>
 
-                            <th width="12%">
-                                Action
-                            </th>
+                                <th width="12%">
+                                    Action
+                                </th>
 
-                        </tr>
+                            </tr>
 
-                    </thead>
+                        </thead>
 
-                    <tbody></tbody>
+                        <tbody></tbody>
 
-                </table>
+                    </table>
+
+                </div>
 
             </div>
 
         </div>
 
-    </div>
 
+        @if (session('category_import_success'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: @json(session('category_import_success')),
+                        confirmButtonText: 'OK'
+                    });
+                });
+            </script>
+        @endif
 
-    {{-- =========================
-        MODAL CREATE / EDIT
-    ========================== --}}
-
-    <div class="modal fade" id="category-modal" tabindex="-1" aria-hidden="true">
-
-        <div class="modal-dialog modal-dialog-centered">
-
-            <div class="modal-content">
-
-                <form id="category-form">
-
-                    {{-- HEADER --}}
-
-                    <div class="modal-header">
-
-                        <h5 class="modal-title" id="category-modal-title">
-
-                            Tambah Kategori
-
-                        </h5>
-
-                        <button type="button" class="btn-close" data-bs-dismiss="modal">
-                        </button>
-
-                    </div>
-
-
-                    {{-- BODY --}}
-
+        {{-- MODAL IMPORT KATEGORI --}}
+        <div class="modal fade" id="categoryImportModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog"><div class="modal-content">
+                <form action="{{ route('super.categories.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header"><div>
+                        <h5 class="modal-title">Import Kategori</h5>
+                        <small class="text-muted">Isi file menggunakan template kategori.</small>
+                    </div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
                     <div class="modal-body">
+                        @error('file')<div class="alert alert-danger">{{ $message }}</div>@enderror
+                        <label for="category-import-file" class="form-label">File Excel atau CSV</label>
+                        <input type="file" id="category-import-file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                        <div class="form-text">Format XLSX, XLS, atau CSV. Maksimal 10 MB. Kode kategori harus unik.</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary"><i data-feather="upload" class="icon-sm me-1"></i> Import Kategori</button>
+                    </div>
+                </form>
+            </div></div>
+        </div>
 
-                        {{-- ID --}}
+        {{-- MODAL CREATE / EDIT --}}
 
-                        <input type="hidden" id="category-id">
+        <div class="modal fade" id="category-modal" tabindex="-1" aria-hidden="true">
 
+            <div class="modal-dialog modal-dialog-centered">
 
-                        {{-- CODE --}}
+                <div class="modal-content">
 
-                        <div class="mb-3">
+                    <form id="category-form">
 
-                            <label class="form-label" for="category-code">
+                        {{-- HEADER --}}
 
-                                Code
+                        <div class="modal-header">
 
-                                <span class="text-danger">
-                                    *
-                                </span>
+                            <h5 class="modal-title" id="category-modal-title">
 
-                            </label>
+                                Tambah Kategori
 
-                            <input type="text" class="form-control" id="category-code" maxlength="50" autocomplete="off"
-                                required>
+                            </h5>
 
-                            <div class="invalid-feedback" id="category-code-error">
-                            </div>
-
-                        </div>
-
-
-                        {{-- NAME --}}
-
-                        <div class="mb-3">
-
-                            <label class="form-label" for="category-name">
-
-                                Nama
-
-                                <span class="text-danger">
-                                    *
-                                </span>
-
-                            </label>
-
-                            <input type="text" class="form-control" id="category-name" maxlength="100" autocomplete="off"
-                                required>
-
-                            <div class="invalid-feedback" id="category-name-error">
-                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal">
+                            </button>
 
                         </div>
 
 
-                        {{-- DESCRIPTION --}}
+                        {{-- BODY --}}
 
-                        <div class="mb-3">
+                        <div class="modal-body">
 
-                            <label class="form-label" for="category-description">
+                            {{-- ID --}}
 
-                                Deskripsi
+                            <input type="hidden" id="category-id">
 
-                            </label>
 
-                            <textarea class="form-control" id="category-description" rows="3">
+                            {{-- CODE --}}
+
+                            <div class="mb-3">
+
+                                <label class="form-label" for="category-code">
+
+                                    Code
+
+                                    <span class="text-danger">
+                                        *
+                                    </span>
+
+                                </label>
+
+                                <input type="text" class="form-control" id="category-code" maxlength="50"
+                                    autocomplete="off" required>
+
+                                <div class="invalid-feedback" id="category-code-error">
+                                </div>
+
+                            </div>
+
+
+                            {{-- NAME --}}
+
+                            <div class="mb-3">
+
+                                <label class="form-label" for="category-name">
+
+                                    Nama
+
+                                    <span class="text-danger">
+                                        *
+                                    </span>
+
+                                </label>
+
+                                <input type="text" class="form-control" id="category-name" maxlength="100"
+                                    autocomplete="off" required>
+
+                                <div class="invalid-feedback" id="category-name-error">
+                                </div>
+
+                            </div>
+
+
+                            {{-- DESCRIPTION --}}
+
+                            <div class="mb-3">
+
+                                <label class="form-label" for="category-description">
+
+                                    Deskripsi
+
+                                </label>
+
+                                <textarea class="form-control" id="category-description" rows="3">
                             </textarea>
 
-                            <div class="invalid-feedback" id="category-description-error">
+                                <div class="invalid-feedback" id="category-description-error">
+                                </div>
+
+                            </div>
+
+
+                            {{-- ACTIVE --}}
+
+                            <div class="form-check form-switch">
+
+                                <input type="checkbox" class="form-check-input" id="category-active" checked>
+
+                                <label class="form-check-label" for="category-active">
+
+                                    Active
+
+                                </label>
+
                             </div>
 
                         </div>
 
 
-                        {{-- ACTIVE --}}
+                        {{-- FOOTER --}}
 
-                        <div class="form-check form-switch">
+                        <div class="modal-footer">
 
-                            <input type="checkbox" class="form-check-input" id="category-active" checked>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
 
-                            <label class="form-check-label" for="category-active">
+                                Batal
 
-                                Active
+                            </button>
 
-                            </label>
+                            <button type="submit" class="btn btn-primary" id="btn-save-category">
+
+                                <i data-feather="save" class="me-1">
+                                </i>
+
+                                Simpan
+
+                            </button>
 
                         </div>
 
-                    </div>
+                    </form>
 
-
-                    {{-- FOOTER --}}
-
-                    <div class="modal-footer">
-
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-
-                            Batal
-
-                        </button>
-
-                        <button type="submit" class="btn btn-primary" id="btn-save-category">
-
-                            <i data-feather="save" class="me-1">
-                            </i>
-
-                            Simpan
-
-                        </button>
-
-                    </div>
-
-                </form>
+                </div>
 
             </div>
-
         </div>
 
     </div>
@@ -258,6 +306,10 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
+
+            @if ($errors->has('file'))
+                new bootstrap.Modal(document.getElementById('categoryImportModal')).show();
+            @endif
 
             'use strict';
 

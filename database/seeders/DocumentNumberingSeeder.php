@@ -16,6 +16,10 @@ class DocumentNumberingSeeder extends Seeder
                 'prefix' => 'MR',
             ],
             [
+                'document_type' => 'purchase_request',
+                'prefix' => 'PR',
+            ],
+            [
                 'document_type' => 'purchase_order',
                 'prefix' => 'PO',
             ],
@@ -24,8 +28,16 @@ class DocumentNumberingSeeder extends Seeder
                 'prefix' => 'GR',
             ],
             [
+                'document_type' => 'purchase_return',
+                'prefix' => 'PRT',
+            ],
+            [
                 'document_type' => 'sales_order',
                 'prefix' => 'SO',
+            ],
+            [
+                'document_type' => 'sales_quotation',
+                'prefix' => 'QUO',
             ],
             [
                 'document_type' => 'delivery_order',
@@ -36,8 +48,24 @@ class DocumentNumberingSeeder extends Seeder
                 'prefix' => 'INV',
             ],
             [
+                'document_type' => 'customer_payment',
+                'prefix' => 'RCPT',
+            ],
+            [
+                'document_type' => 'supplier_payment',
+                'prefix' => 'PAY',
+            ],
+            [
+                'document_type' => 'journal_entry',
+                'prefix' => 'JRN',
+            ],
+            [
                 'document_type' => 'pos',
                 'prefix' => 'POS',
+            ],
+            [
+                'document_type' => 'pos_session',
+                'prefix' => 'SHIFT',
             ],
             [
                 'document_type' => 'stock_opname',

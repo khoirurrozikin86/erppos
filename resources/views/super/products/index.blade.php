@@ -29,14 +29,38 @@
                 </p>
             </div>
 
-            @can('products.create')
-                <button type="button" class="btn btn-primary" id="btn-add-product">
-                    <i class="fas fa-plus me-1"></i>
-                    Tambah Barang
-                </button>
-            @endcan
+            <div class="d-flex flex-wrap gap-2">
+                @can('products.view')
+                    <a href="{{ route('super.products.export') }}" class="btn btn-outline-success">
+                        <i class="fas fa-file-export me-1"></i> Export Excel
+                    </a>
+                    <a href="{{ route('super.products.template') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-download me-1"></i> Template
+                    </a>
+                @endcan
+                @can('products.create')
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#productImportModal">
+                        <i class="fas fa-file-import me-1"></i> Import
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-add-product">
+                        <i class="fas fa-plus me-1"></i> Tambah Barang
+                    </button>
+                @endcan
+            </div>
         </div>
 
+        @if (session('import_success'))
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: @json(session('import_success')),
+                        confirmButtonText: 'OK'
+                    });
+                });
+            </script>
+        @endif
         <div class="card">
             <div class="card-body">
 
@@ -53,6 +77,7 @@
                                 <th>Nama Barang</th>
                                 <th>Kategori</th>
                                 <th>Satuan</th>
+                                <th class="text-end">Stok Saat Ini</th>
                                 <th>Tipe</th>
                                 <th>Harga Beli</th>
                                 <th>Harga Jual</th>
@@ -69,6 +94,39 @@
             </div>
         </div>
 
+    </div>
+
+    {{-- MODAL IMPORT PRODUCT --}}
+    <div class="modal fade" id="productImportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('super.products.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-header">
+                        <div>
+                            <h5 class="modal-title">Import Barang</h5>
+                            <small class="text-muted">Pilih file template yang sudah diisi.</small>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+                    </div>
+                    <div class="modal-body">
+                        @error('file')
+                            <div class="alert alert-danger">{{ $message }}</div>
+                        @enderror
+                        <label for="product-import-file" class="form-label">File Excel atau CSV</label>
+                        <input type="file" id="product-import-file" name="file" class="form-control"
+                            accept=".xlsx,.xls,.csv" required>
+                        <div class="form-text">Format yang didukung: XLSX, XLS, atau CSV. Maksimal 10 MB.</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-file-import me-1"></i> Import Barang
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
 
@@ -460,6 +518,9 @@
                             <input type="file" class="form-control" id="images" name="images[]"
                                 accept="image/jpeg,image/png,image/webp" multiple>
 
+                            <input type="hidden" id="primary_image_id" name="primary_image_id" value="">
+                            <div id="deleted-image-inputs"></div>
+
                             <small class="text-muted">
                                 Format JPG, PNG, WEBP. Bisa memilih beberapa gambar.
                             </small>
@@ -673,6 +734,10 @@
 
         $(function() {
 
+            @if ($errors->has('file'))
+                new bootstrap.Modal(document.getElementById('productImportModal')).show();
+            @endif
+
             let editing = false;
 
             const productModalElement =
@@ -753,6 +818,14 @@
                     },
 
                     {
+                        data: 'current_stock',
+                        name: 'stock.quantity',
+                        className: 'text-end',
+                        orderable: false,
+                        searchable: false
+                    },
+
+                    {
                         data: 'product_type_label',
                         name: 'product_type',
                         orderable: true,
@@ -800,6 +873,86 @@
             // RESET FORM
             // =========================================================
 
+            function getDeletedImageIds() {
+                return $('#deleted-image-inputs input[name="deleted_image_ids[]"]')
+                    .map(function() {
+                        return Number($(this).val());
+                    })
+                    .get()
+                    .filter(id => !isNaN(id) && id > 0);
+            }
+
+            function setDeletedImageIds(ids) {
+                const container = $('#deleted-image-inputs');
+                container.empty();
+
+                (Array.isArray(ids) ? ids : []).forEach(function(id) {
+                    if (id === null || id === undefined || id === '') {
+                        return;
+                    }
+
+                    const input = $('<input>', {
+                        type: 'hidden',
+                        name: 'deleted_image_ids[]',
+                        value: id
+                    });
+
+                    container.append(input);
+                });
+            }
+
+            function renderExistingImages(images = []) {
+
+                $('#existing-images').empty();
+
+                if (!Array.isArray(images) || !images.length) {
+                    $('#primary_image_id').val('');
+                    setDeletedImageIds([]);
+                    return;
+                }
+
+                const selectedPrimaryId = images.find(img => img.is_primary)?.id ?? images[0].id ?? '';
+                $('#primary_image_id').val(selectedPrimaryId);
+
+                images.forEach(function(image) {
+                    const src = image.path || image.url || '';
+
+                    if (!src) {
+                        return;
+                    }
+
+                    const isPrimary = Number(image.id) === Number(selectedPrimaryId);
+
+                    const html = `
+                        <div class="col-md-2">
+                            <div class="image-preview-wrapper position-relative">
+                                <img src="${src}"
+                                     class="product-preview-image"
+                                     alt="${image.file_name || 'Product image'}">
+                                <span class="badge ${isPrimary ? 'bg-primary' : 'bg-secondary'} position-absolute top-0 start-0 m-2 primary-badge" style="display: ${isPrimary ? 'inline-block' : 'none'};">
+                                    Utama
+                                </span>
+                                <button type="button"
+                                    class="btn btn-sm ${isPrimary ? 'btn-primary' : 'btn-outline-primary'} set-primary-image-btn"
+                                    data-image-id="${image.id}"
+                                    style="position:absolute; bottom:8px; right:8px; padding:4px 8px; font-size:11px;">
+                                    ${isPrimary ? 'Utama' : 'Jadikan utama'}
+                                </button>
+                                <button type="button"
+                                    class="btn btn-danger delete-image-btn"
+                                    data-image-id="${image.id}"
+                                    style="position:absolute; top:8px; right:8px; width:28px; height:28px; padding:0; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; line-height:1; box-shadow:0 2px 6px rgba(0,0,0,.18); z-index:2;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    $('#existing-images').append(html);
+                });
+
+            }
+
             function resetProductForm() {
 
                 $('#productForm')[0].reset();
@@ -826,8 +979,11 @@
 
                 $('#taxable').prop('checked', false);
 
+                $('#images').val('');
                 $('#image-preview').empty();
                 $('#existing-images').empty();
+                $('#deleted-image-inputs').empty();
+                $('#primary_image_id').val('');
 
                 $('#product-form-alert').empty();
 
@@ -854,6 +1010,57 @@
             // =========================================================
             // IMAGE PREVIEW
             // =========================================================
+
+            $(document).on('click', '.set-primary-image-btn', function(e) {
+                e.preventDefault();
+
+                const imageId = $(this).data('image-id');
+                $('#primary_image_id').val(imageId);
+
+                $('.set-primary-image-btn').each(function() {
+                    const isSelected = Number($(this).data('image-id')) === Number(imageId);
+                    $(this).text(isSelected ? 'Utama' : 'Jadikan utama');
+                    $(this).toggleClass('btn-primary', isSelected);
+                    $(this).toggleClass('btn-outline-primary', !isSelected);
+                    $(this).closest('.image-preview-wrapper').find('.primary-badge').toggle(isSelected);
+                });
+            });
+
+            $(document).on('click', '.delete-image-btn', function(e) {
+                e.preventDefault();
+
+                const imageId = Number($(this).data('image-id'));
+                const deleted = getDeletedImageIds();
+
+                if (!deleted.includes(imageId)) {
+                    deleted.push(imageId);
+                    setDeletedImageIds(deleted);
+                }
+
+                $(this).closest('.col-md-2').remove();
+
+                const remainingImages = $('.set-primary-image-btn').map(function() {
+                    return Number($(this).data('image-id'));
+                }).get();
+
+                if (remainingImages.length) {
+                    const selectedPrimary = Number($('#primary_image_id').val());
+                    const fallbackId = remainingImages.includes(selectedPrimary)
+                        ? selectedPrimary
+                        : remainingImages[0];
+                    $('#primary_image_id').val(fallbackId);
+
+                    $('.set-primary-image-btn').each(function() {
+                        const isSelected = Number($(this).data('image-id')) === fallbackId;
+                        $(this).text(isSelected ? 'Utama' : 'Jadikan utama');
+                        $(this).toggleClass('btn-primary', isSelected);
+                        $(this).toggleClass('btn-outline-primary', !isSelected);
+                        $(this).closest('.image-preview-wrapper').find('.primary-badge').toggle(isSelected);
+                    });
+                } else {
+                    $('#primary_image_id').val('');
+                }
+            });
 
             $('#images').on('change', function() {
 
@@ -972,6 +1179,8 @@
 
                 $('#description').val(payload.description);
 
+                renderExistingImages(payload.images || []);
+
                 productModal.show();
 
             });
@@ -988,6 +1197,12 @@
                 const form = this;
 
                 const formData = new FormData(form);
+
+                formData.delete('deleted_image_ids[]');
+
+                getDeletedImageIds().forEach(function(id) {
+                    formData.append('deleted_image_ids[]', id);
+                });
 
                 let url = "{{ route('super.products.store') }}";
 

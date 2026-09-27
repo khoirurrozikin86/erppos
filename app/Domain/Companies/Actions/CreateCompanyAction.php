@@ -3,6 +3,7 @@
 namespace App\Domain\Companies\Actions;
 
 use App\Domain\Audit\Services\AuditLogService;
+use App\Domain\Accounting\Services\ChartOfAccountDefaultsService;
 use App\Domain\Companies\DTOs\CompanyData;
 use App\Models\Company;
 use Illuminate\Support\Facades\DB;
@@ -12,7 +13,8 @@ use App\Models\GeneralSetting;
 class CreateCompanyAction
 {
     public function __construct(
-        protected AuditLogService $auditLog
+        protected AuditLogService $auditLog,
+        protected ChartOfAccountDefaultsService $chartOfAccountDefaults,
     ) {}
 
     public function __invoke(
@@ -32,11 +34,17 @@ class CreateCompanyAction
                 'tax_included' => false,
             ]);
 
+            $this->chartOfAccountDefaults->seedForCompany($company);
+
 
             $documentNumberings = [
                 [
                     'document_type' => 'material_request',
                     'prefix' => 'MR',
+                ],
+                [
+                    'document_type' => 'purchase_request',
+                    'prefix' => 'PR',
                 ],
                 [
                     'document_type' => 'purchase_order',
@@ -47,8 +55,16 @@ class CreateCompanyAction
                     'prefix' => 'GR',
                 ],
                 [
+                    'document_type' => 'purchase_return',
+                    'prefix' => 'PRT',
+                ],
+                [
                     'document_type' => 'sales_order',
                     'prefix' => 'SO',
+                ],
+                [
+                    'document_type' => 'sales_quotation',
+                    'prefix' => 'QUO',
                 ],
                 [
                     'document_type' => 'delivery_order',
@@ -59,8 +75,24 @@ class CreateCompanyAction
                     'prefix' => 'INV',
                 ],
                 [
+                    'document_type' => 'customer_payment',
+                    'prefix' => 'RCPT',
+                ],
+                [
+                    'document_type' => 'supplier_payment',
+                    'prefix' => 'PAY',
+                ],
+                [
+                    'document_type' => 'journal_entry',
+                    'prefix' => 'JRN',
+                ],
+                [
                     'document_type' => 'pos',
                     'prefix' => 'POS',
+                ],
+                [
+                    'document_type' => 'pos_session',
+                    'prefix' => 'SHIFT',
                 ],
                 [
                     'document_type' => 'stock_opname',

@@ -10,7 +10,11 @@ use App\Http\Requests\Admin\SupplierUpdateRequest;
 use App\Models\Supplier;
 use Yajra\DataTables\Facades\DataTables;
 use App\Exports\SuppliersExport;
+use App\Exports\SuppliersTemplateExport;
+use App\Imports\SuppliersImport;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Illuminate\Http\Request;
 
 class SupplierController extends Controller
 {
@@ -165,5 +169,33 @@ class SupplierController extends Controller
             new SuppliersExport,
             'suppliers-' . now()->format('Y-m-d-His') . '.xlsx'
         );
+    }
+
+    public function template()
+    {
+        return Excel::download(new SuppliersTemplateExport(), 'template-supplier.xlsx');
+    }
+
+    public function import(Request $request, SupplierService $service)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
+        ]);
+
+        try {
+            Excel::import(new SuppliersImport($service), $request->file('file'));
+        } catch (ExcelValidationException $exception) {
+            $message = collect($exception->failures())
+                ->map(fn ($failure) => 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors()))
+                ->take(10)
+                ->implode(' | ');
+
+            return back()->withErrors(['file' => $message ?: 'Data supplier pada file tidak valid.']);
+        } catch (\Throwable $exception) {
+            report($exception);
+            return back()->withErrors(['file' => 'Import gagal. Pastikan kode supplier tidak duplikat dan format file sesuai template.']);
+        }
+
+        return redirect()->route('super.suppliers.index')->with('supplier_import_success', 'Data supplier berhasil diimpor.');
     }
 }

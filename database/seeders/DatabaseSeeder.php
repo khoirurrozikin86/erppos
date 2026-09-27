@@ -23,17 +23,17 @@ class DatabaseSeeder extends Seeder
         $this->call([
 
             UsersAndPermissionsSeeder::class,
-            // OutletSeeder::class,
-            // TicketQrcodeSeeder::class,
             // UserSeeder::class,
-            // userOutletSeeder::class,
-            companySeeder::class,
+            CompanySeeder::class,
             CategorySeeder::class,
             UnitSeeder::class,
             SupplierSeeder::class,
             DocumentNumberingSeeder::class,
+            ChartOfAccountsSeeder::class,
+            CashBankSeeder::class,
             CustomerSeeder::class,
-            productSeeder::class,
+            ProductSeeder::class,
+            PriceListSeeder::class,
 
         ]);
     }

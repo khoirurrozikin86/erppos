@@ -142,6 +142,37 @@ class ProductUpdateRequest extends FormRequest
                 'nullable',
                 'boolean',
             ],
+
+            'primary_image_id' => [
+                'nullable',
+                'integer',
+                Rule::in($product->images()->pluck('id')->all()),
+            ],
+
+            'deleted_image_ids' => [
+                'nullable',
+                'array',
+            ],
+
+            'deleted_image_ids.*' => [
+                'integer',
+                Rule::in($product->images()->pluck('id')->all()),
+            ],
+
+            'images' => [
+                'nullable',
+                'array',
+            ],
+
+            'images.*' => [
+                'file',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
+
+
+
         ];
     }
 

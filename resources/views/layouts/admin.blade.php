@@ -66,6 +66,20 @@
 
 
     <style>
+        @if (request()->routeIs('super.pos.index'))
+        html, body.pos-screen { min-height: 100%; }
+        body.pos-screen { margin: 0; overflow-x: hidden; }
+        body.pos-screen .sidebar,
+        body.pos-screen .settings-sidebar,
+        body.pos-screen .navbar,
+        body.pos-screen .footer { display: none !important; }
+        body.pos-screen .main-wrapper { padding-left: 0 !important; }
+        body.pos-screen .page-wrapper { margin-left: 0 !important; width: 100% !important; min-height: 100vh; padding-top: 0 !important; }
+        body.pos-screen .page-content { margin: 0 !important; padding: 1.25rem !important; min-height: 100vh; }
+        body.pos-screen .pos-screen-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin: -1.25rem -1.25rem 1.25rem; padding: .75rem 1.25rem; background: #fff; border-bottom: 1px solid #e5e7eb; }
+        @media (max-width: 767.98px) { body.pos-screen .page-content { padding: .75rem !important; } body.pos-screen .pos-screen-header { margin: -.75rem -.75rem .75rem; padding: .75rem; } }
+        @endif
+
         /* =========================================================
    SIDEBAR - OSIL GREEN THEME
    ========================================================= */
@@ -318,16 +332,20 @@
 </head>
 
 
-<body>
+<body class="{{ request()->routeIs('super.pos.index') ? 'pos-screen' : '' }}">
     <div class="main-wrapper">
         {{-- Sidebar --}}
-        @include('admin.partials.sidebar')
+        @unless(request()->routeIs('super.pos.index'))
+            @include('admin.partials.sidebar')
 
-        <nav class="settings-sidebar">@includeWhen(View::exists('admin.partials.settings'), 'admin.partials.settings')</nav>
+            <nav class="settings-sidebar">@includeWhen(View::exists('admin.partials.settings'), 'admin.partials.settings')</nav>
+        @endunless
 
         <div class="page-wrapper">
             {{-- Navbar --}}
-            @include('admin.partials.navbar')
+            @unless(request()->routeIs('super.pos.index'))
+                @include('admin.partials.navbar')
+            @endunless
 
             <div class="page-content">
                 @yield('breadcrumb')
@@ -335,7 +353,9 @@
             </div>
 
             {{-- Footer --}}
-            @include('admin.partials.footer')
+            @unless(request()->routeIs('super.pos.index'))
+                @include('admin.partials.footer')
+            @endunless
         </div>
     </div>
 

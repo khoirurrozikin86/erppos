@@ -1,22 +1,55 @@
 @extends('layouts.admin')
 
+
+@section('title', 'units')
+
+@section('breadcrumb')
+    <nav class="page-breadcrumb">
+        <ol class="breadcrumb">
+
+            <li class="breadcrumb-item">
+                <a href="#">Master</a>
+            </li>
+
+            <li class="breadcrumb-item active" aria-current="page">
+                Units
+            </li>
+
+        </ol>
+    </nav>
+@endsection
+
+
+
 @section('content')
-    <div class="page-content">
+    <div class="row">
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h4 class="mb-1">Satuan</h4>
+                <h4 class="mb-1">Unit</h4>
                 <p class="text-muted mb-0">
                     Kelola satuan barang.
                 </p>
             </div>
 
-            @can('units.create')
-                <button type="button" class="btn btn-primary" id="btn-add-unit">
-                    <i data-feather="plus" class="icon-sm me-1"></i>
-                    Tambah Satuan
-                </button>
-            @endcan
+            <div class="d-flex gap-2">
+                @can('units.view')
+                    <a href="{{ route('super.units.template') }}" class="btn btn-outline-secondary">
+                        <i data-feather="file-text" class="icon-sm me-1"></i> Template
+                    </a>
+                    <a href="{{ route('super.units.export') }}" class="btn btn-success">
+                        <i data-feather="download" class="icon-sm me-1"></i> Export Excel
+                    </a>
+                @endcan
+                @can('units.create')
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#unitImportModal">
+                        <i data-feather="upload" class="icon-sm me-1"></i> Import Excel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-add-unit">
+                        <i data-feather="plus" class="icon-sm me-1"></i> Tambah Satuan
+                    </button>
+                @endcan
+            </div>
         </div>
 
         <div class="card">
@@ -47,6 +80,42 @@
 
     </div>
 
+
+    @if (session('unit_import_success'))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: @json(session('unit_import_success')),
+                    confirmButtonText: 'OK'
+                });
+            });
+        </script>
+    @endif
+
+    {{-- MODAL IMPORT SATUAN --}}
+    <div class="modal fade" id="unitImportModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog"><div class="modal-content">
+            <form action="{{ route('super.units.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-header"><div>
+                    <h5 class="modal-title">Import Satuan</h5>
+                    <small class="text-muted">Isi file menggunakan template satuan.</small>
+                </div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+                <div class="modal-body">
+                    @error('file')<div class="alert alert-danger">{{ $message }}</div>@enderror
+                    <label for="unit-import-file" class="form-label">File Excel atau CSV</label>
+                    <input type="file" id="unit-import-file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+                    <div class="form-text">Format XLSX, XLS, atau CSV. Maksimal 10 MB. Kode satuan harus unik.</div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary"><i data-feather="upload" class="icon-sm me-1"></i> Import Satuan</button>
+                </div>
+            </form>
+        </div></div>
+    </div>
 
     {{-- MODAL --}}
     <div class="modal fade" id="unitModal" tabindex="-1" aria-hidden="true">
@@ -170,6 +239,10 @@
 @push('scripts')
     <script>
         $(function() {
+
+            @if ($errors->has('file'))
+                new bootstrap.Modal(document.getElementById('unitImportModal')).show();
+            @endif
 
             $.ajaxSetup({
                 headers: {

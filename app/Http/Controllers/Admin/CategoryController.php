@@ -10,6 +10,12 @@ use App\Domain\Categories\Queries\CategoryTableQuery;
 use App\Domain\Categories\Services\CategoryService;
 
 use App\Models\Category;
+use App\Exports\CategoriesTemplateExport;
+use App\Exports\CategoriesExport;
+use App\Imports\CategoriesImport;
+use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 
 use Yajra\DataTables\Facades\DataTables;
 
@@ -18,6 +24,37 @@ class CategoryController extends Controller
     public function index()
     {
         return view('super.categories.index');
+    }
+
+    public function template()
+    {
+        return Excel::download(new CategoriesTemplateExport(), 'template-kategori.xlsx');
+    }
+
+    public function export()
+    {
+        return Excel::download(new CategoriesExport(), 'kategori-' . now()->format('Y-m-d-His') . '.xlsx');
+    }
+
+    public function import(Request $request, CategoryService $service)
+    {
+        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240']]);
+
+        try {
+            Excel::import(new CategoriesImport($service), $request->file('file'));
+        } catch (ExcelValidationException $exception) {
+            $message = collect($exception->failures())
+                ->map(fn ($failure) => 'Baris ' . $failure->row() . ': ' . implode(', ', $failure->errors()))
+                ->take(10)
+                ->implode(' | ');
+
+            return back()->withErrors(['file' => $message ?: 'Data kategori pada file tidak valid.']);
+        } catch (\Throwable $exception) {
+            report($exception);
+            return back()->withErrors(['file' => 'Import gagal. Pastikan kode kategori tidak duplikat dan format file sesuai template.']);
+        }
+
+        return redirect()->route('super.categories.index')->with('category_import_success', 'Data kategori berhasil diimpor.');
     }
 
     public function dt(CategoryTableQuery $q)

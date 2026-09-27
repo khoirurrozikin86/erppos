@@ -10,15 +10,24 @@ use App\Http\Requests\Admin\ProductUpdateRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Unit;
+use App\Exports\ProductsExport;
+use App\Imports\ProductsImport;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProductsTemplateExport;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Yajra\DataTables\Facades\DataTables;
+use App\Domain\Products\Services\ProductImageService;
 
 class ProductController extends Controller
 {
     public function __construct(
-        protected ProductService $service
+        protected ProductService $service,
+        protected ProductImageService $imageService
+
     ) {}
 
     public function index()
@@ -39,6 +48,48 @@ class ProductController extends Controller
         ));
     }
 
+    public function export()
+    {
+        return Excel::download(new ProductsExport(), 'barang.xlsx');
+    }
+
+    public function template()
+    {
+        return Excel::download(new ProductsTemplateExport(), 'template-barang.xlsx');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240'],
+        ]);
+
+        try {
+            Excel::import(new ProductsImport(), $request->file('file'));
+        } catch (ExcelValidationException $exception) {
+            $messages = collect($exception->failures())
+                ->flatMap(fn ($failure) => $failure->errors())
+                ->take(10)
+                ->implode(' ');
+
+            return back()->withErrors(['file' => $messages]);
+        } catch (ValidationException $exception) {
+            $messages = collect($exception->errors())
+                ->flatten()
+                ->take(10)
+                ->implode(' ');
+
+            return back()->withErrors(['file' => $messages]);
+        } catch (\RuntimeException $exception) {
+            return back()->withErrors(['file' => $exception->getMessage()]);
+        } catch (\Throwable $exception) {
+            report($exception);
+            return back()->withErrors(['file' => 'Import gagal. Periksa format file dan pastikan kode, barcode, serta SKU tidak duplikat.']);
+        }
+
+        return redirect()->route('super.products.index')->with('import_success', 'Data barang berhasil diimpor.');
+    }
+
     public function dt(ProductTableQuery $query): JsonResponse
     {
         return DataTables::eloquent($query->builder())
@@ -55,6 +106,14 @@ class ProductController extends Controller
                     . ($product->unit->symbol
                         ? " ({$product->unit->symbol})"
                         : '');
+            })
+
+            ->addColumn('current_stock', function (Product $product) {
+                if (!$product->track_stock) {
+                    return '—';
+                }
+
+                return number_format((float) ($product->stock?->quantity ?? 0), 4, ',', '.');
             })
 
             ->addColumn('product_type_label', function (Product $product) {
@@ -147,6 +206,17 @@ class ProductController extends Controller
                             'allow_sales' => (bool) $product->allow_sales,
                             'description' => $product->description,
                             'is_active' => (bool) $product->is_active,
+                            'images' => $product->images
+                                ->map(function ($image) {
+                                    return [
+                                        'id' => $image->id,
+                                        'path' => asset('storage/' . $image->path),
+                                        'file_name' => $image->file_name,
+                                        'is_primary' => (bool) $image->is_primary,
+                                    ];
+                                })
+                                ->values()
+                                ->all(),
                         ],
                     ],
                     [
@@ -182,13 +252,47 @@ class ProductController extends Controller
             ->toJson();
     }
 
-    public function store(ProductStoreRequest $request): JsonResponse|Response
-    {
+    public function store(
+        ProductStoreRequest $request
+    ): JsonResponse|Response {
+
+        $validated = $request->validated();
+
+        /*
+     * Ambil file gambar.
+     */
+        $images = $request->file('images', []);
+
+        /*
+     * Jangan kirim images ke ProductService.
+     */
+        unset($validated['images']);
+
+        /*
+     * Simpan Product.
+     */
         $product = $this->service->create(
-            $request->validated()
+            $validated
         );
 
+        /*
+     * Simpan Product Images.
+     */
+        $this->imageService->upload(
+            $product,
+            $images
+        );
+
+        /*
+     * Reload relasi.
+     */
+        $product->load([
+            'images',
+            'primaryImage',
+        ]);
+
         if ($request->expectsJson()) {
+
             return response()->json([
                 'success' => true,
                 'message' => 'Barang berhasil ditambahkan.',
@@ -198,19 +302,71 @@ class ProductController extends Controller
 
         return redirect()
             ->route('super.products.index')
-            ->with('success', 'Barang berhasil ditambahkan.');
+            ->with(
+                'success',
+                'Barang berhasil ditambahkan.'
+            );
     }
 
     public function update(
         ProductUpdateRequest $request,
         Product $product
     ): JsonResponse|Response {
+
+        $validated = $request->validated();
+
+        /*
+     * Ambil gambar baru.
+     */
+        $images = $request->file('images', []);
+
+        /*
+     * Jangan kirim file ke ProductService.
+     */
+        unset($validated['images']);
+
+        /*
+     * Update data Product.
+     */
         $product = $this->service->update(
             $product,
-            $request->validated()
+            $validated
         );
 
+        /*
+     * Jika ada gambar baru,
+     * tambahkan ke product_images.
+     */
+        $this->imageService->upload(
+            $product,
+            $images
+        );
+
+        $deletedImageIds = $request->input('deleted_image_ids', []);
+        $this->imageService->deleteSelected(
+            $product,
+            $deletedImageIds
+        );
+
+        $primaryImageId = $request->input('primary_image_id');
+
+        if ($primaryImageId !== null && $primaryImageId !== '') {
+            $this->imageService->setPrimary(
+                $product,
+                (int) $primaryImageId
+            );
+        }
+
+        /*
+     * Reload.
+     */
+        $product->load([
+            'images',
+            'primaryImage',
+        ]);
+
         if ($request->expectsJson()) {
+
             return response()->json([
                 'success' => true,
                 'message' => 'Barang berhasil diperbarui.',
@@ -220,16 +376,33 @@ class ProductController extends Controller
 
         return redirect()
             ->route('super.products.index')
-            ->with('success', 'Barang berhasil diperbarui.');
+            ->with(
+                'success',
+                'Barang berhasil diperbarui.'
+            );
     }
 
     public function destroy(
         Request $request,
         Product $product
     ): JsonResponse|Response {
-        $this->service->delete($product);
+
+        /*
+     * Hapus file gambar terlebih dahulu.
+     */
+        $this->imageService->deleteAll(
+            $product
+        );
+
+        /*
+     * Hapus Product.
+     */
+        $this->service->delete(
+            $product
+        );
 
         if ($request->expectsJson()) {
+
             return response()->json([
                 'success' => true,
                 'message' => 'Barang berhasil dihapus.',
@@ -238,6 +411,9 @@ class ProductController extends Controller
 
         return redirect()
             ->route('super.products.index')
-            ->with('success', 'Barang berhasil dihapus.');
+            ->with(
+                'success',
+                'Barang berhasil dihapus.'
+            );
     }
 }

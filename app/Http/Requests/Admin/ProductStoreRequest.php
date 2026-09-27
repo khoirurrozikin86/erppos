@@ -136,6 +136,23 @@ class ProductStoreRequest extends FormRequest
                 'nullable',
                 'boolean',
             ],
+
+
+            // =========================
+            // PRODUCT IMAGES
+            // =========================
+
+            'images' => [
+                'nullable',
+                'array',
+            ],
+
+            'images.*' => [
+                'file',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
         ];
     }
 
