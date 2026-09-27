@@ -110,7 +110,7 @@ class ProductImageService
         }
 
         $ids = array_map('intval', $imageIds);
-        $ids = array_values(array_unique(array_filter($ids, fn ($id) => $id > 0)));
+        $ids = array_values(array_unique(array_filter($ids, fn($id) => $id > 0)));
 
         if (empty($ids)) {
             return;

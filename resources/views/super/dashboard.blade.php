@@ -28,12 +28,48 @@
         <div class="row g-3 mb-4">
             @php
                 $stats = [
-                    'products' => ['label' => 'Barang', 'route' => 'super.products.index', 'icon' => 'box', 'permission' => 'products.view', 'accent' => 'primary'],
-                    'pricelists' => ['label' => 'Pricelist', 'route' => 'super.pricelists.index', 'icon' => 'dollar-sign', 'permission' => 'pricelists.view', 'accent' => 'success'],
-                    'categories' => ['label' => 'Kategori', 'route' => 'super.categories.index', 'icon' => 'tag', 'permission' => 'categories.view', 'accent' => 'warning'],
-                    'units' => ['label' => 'Satuan', 'route' => 'super.units.index', 'icon' => 'package', 'permission' => 'units.view', 'accent' => 'info'],
-                    'suppliers' => ['label' => 'Supplier', 'route' => 'super.suppliers.index', 'icon' => 'truck', 'permission' => 'suppliers.view', 'accent' => 'danger'],
-                    'customers' => ['label' => 'Pelanggan', 'route' => 'super.customers.index', 'icon' => 'users', 'permission' => 'customers.view', 'accent' => 'secondary'],
+                    'products' => [
+                        'label' => 'Barang',
+                        'route' => 'super.products.index',
+                        'icon' => 'box',
+                        'permission' => 'products.view',
+                        'accent' => 'primary',
+                    ],
+                    'pricelists' => [
+                        'label' => 'Pricelist',
+                        'route' => 'super.pricelists.index',
+                        'icon' => 'dollar-sign',
+                        'permission' => 'pricelists.view',
+                        'accent' => 'success',
+                    ],
+                    'categories' => [
+                        'label' => 'Kategori',
+                        'route' => 'super.categories.index',
+                        'icon' => 'tag',
+                        'permission' => 'categories.view',
+                        'accent' => 'warning',
+                    ],
+                    'units' => [
+                        'label' => 'Satuan',
+                        'route' => 'super.units.index',
+                        'icon' => 'package',
+                        'permission' => 'units.view',
+                        'accent' => 'info',
+                    ],
+                    'suppliers' => [
+                        'label' => 'Supplier',
+                        'route' => 'super.suppliers.index',
+                        'icon' => 'truck',
+                        'permission' => 'suppliers.view',
+                        'accent' => 'danger',
+                    ],
+                    'customers' => [
+                        'label' => 'Pelanggan',
+                        'route' => 'super.customers.index',
+                        'icon' => 'users',
+                        'permission' => 'customers.view',
+                        'accent' => 'secondary',
+                    ],
                 ];
             @endphp
 
@@ -45,7 +81,8 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
-                                            <div class="text-muted small fw-semibold text-uppercase tracking-wide">{{ $stat['label'] }}</div>
+                                            <div class="text-muted small fw-semibold text-uppercase tracking-wide">
+                                                {{ $stat['label'] }}</div>
                                             <div class="mt-2 fs-3 fw-bold text-dark">{{ number_format($totals[$key]) }}</div>
                                         </div>
                                         <div class="stat-icon bg-{{ $stat['accent'] }}-soft text-{{ $stat['accent'] }}">
@@ -53,7 +90,8 @@
                                         </div>
                                     </div>
                                     <div class="mt-3 small text-muted">
-                                        <span class="fw-semibold text-{{ $stat['accent'] }}">{{ $totals[$key] > 0 ? 'Siap digunakan' : 'Belum ada data' }}</span>
+                                        <span
+                                            class="fw-semibold text-{{ $stat['accent'] }}">{{ $totals[$key] > 0 ? 'Siap digunakan' : 'Belum ada data' }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -97,15 +135,18 @@
                         </div>
 
                         <div class="mt-4 small text-muted">
-                            <div class="d-flex align-items-center justify-content-between py-2 border-top border-light-subtle">
+                            <div
+                                class="d-flex align-items-center justify-content-between py-2 border-top border-light-subtle">
                                 <span>Jumlah kategori produk</span>
                                 <strong class="text-dark">{{ number_format($totals['categories']) }}</strong>
                             </div>
-                            <div class="d-flex align-items-center justify-content-between py-2 border-top border-light-subtle">
+                            <div
+                                class="d-flex align-items-center justify-content-between py-2 border-top border-light-subtle">
                                 <span>Jumlah satuan barang</span>
                                 <strong class="text-dark">{{ number_format($totals['units']) }}</strong>
                             </div>
-                            <div class="d-flex align-items-center justify-content-between py-2 border-top border-light-subtle">
+                            <div
+                                class="d-flex align-items-center justify-content-between py-2 border-top border-light-subtle">
                                 <span>Jumlah pricelist</span>
                                 <strong class="text-dark">{{ number_format($totals['pricelists']) }}</strong>
                             </div>
@@ -126,25 +167,29 @@
 
                         <div class="d-grid gap-2">
                             @can('products.view')
-                                <a href="{{ route('super.products.index') }}" class="btn btn-light text-start dashboard-quick-action">
+                                <a href="{{ route('super.products.index') }}"
+                                    class="btn btn-light text-start dashboard-quick-action">
                                     <i data-feather="box" class="me-2"></i> Kelola Barang
                                 </a>
                             @endcan
 
                             @can('suppliers.view')
-                                <a href="{{ route('super.suppliers.index') }}" class="btn btn-light text-start dashboard-quick-action">
+                                <a href="{{ route('super.suppliers.index') }}"
+                                    class="btn btn-light text-start dashboard-quick-action">
                                     <i data-feather="truck" class="me-2"></i> Daftar Supplier
                                 </a>
                             @endcan
 
                             @can('customers.view')
-                                <a href="{{ route('super.customers.index') }}" class="btn btn-light text-start dashboard-quick-action">
+                                <a href="{{ route('super.customers.index') }}"
+                                    class="btn btn-light text-start dashboard-quick-action">
                                     <i data-feather="users" class="me-2"></i> Pelanggan
                                 </a>
                             @endcan
 
                             @can('categories.view')
-                                <a href="{{ route('super.categories.index') }}" class="btn btn-light text-start dashboard-quick-action">
+                                <a href="{{ route('super.categories.index') }}"
+                                    class="btn btn-light text-start dashboard-quick-action">
                                     <i data-feather="tag" class="me-2"></i> Kategori Produk
                                 </a>
                             @endcan

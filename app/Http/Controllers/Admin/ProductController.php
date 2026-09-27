@@ -68,7 +68,7 @@ class ProductController extends Controller
             Excel::import(new ProductsImport(), $request->file('file'));
         } catch (ExcelValidationException $exception) {
             $messages = collect($exception->failures())
-                ->flatMap(fn ($failure) => $failure->errors())
+                ->flatMap(fn($failure) => $failure->errors())
                 ->take(10)
                 ->implode(' ');
 

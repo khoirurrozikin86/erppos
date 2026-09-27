@@ -39,7 +39,8 @@
                     </a>
                 @endcan
                 @can('products.create')
-                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#productImportModal">
+                    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal"
+                        data-bs-target="#productImportModal">
                         <i class="fas fa-file-import me-1"></i> Import
                     </button>
                     <button type="button" class="btn btn-primary" id="btn-add-product">
@@ -182,7 +183,8 @@
                                     Barcode
                                 </label>
 
-                                <input type="text" class="form-control" id="barcode" name="barcode" maxlength="100">
+                                <input type="text" class="form-control" id="barcode" name="barcode"
+                                    maxlength="100">
                             </div>
 
                             <div class="col-md-4 mb-3">
@@ -190,7 +192,8 @@
                                     SKU
                                 </label>
 
-                                <input type="text" class="form-control" id="sku" name="sku" maxlength="100">
+                                <input type="text" class="form-control" id="sku" name="sku"
+                                    maxlength="100">
                             </div>
 
                             <div class="col-md-8 mb-3">
@@ -198,8 +201,8 @@
                                     Nama Barang <span class="text-danger">*</span>
                                 </label>
 
-                                <input type="text" class="form-control" id="name" name="name" maxlength="150"
-                                    required>
+                                <input type="text" class="form-control" id="name" name="name"
+                                    maxlength="150" required>
                             </div>
 
                             <div class="col-md-4 mb-3">
@@ -1022,7 +1025,8 @@
                     $(this).text(isSelected ? 'Utama' : 'Jadikan utama');
                     $(this).toggleClass('btn-primary', isSelected);
                     $(this).toggleClass('btn-outline-primary', !isSelected);
-                    $(this).closest('.image-preview-wrapper').find('.primary-badge').toggle(isSelected);
+                    $(this).closest('.image-preview-wrapper').find('.primary-badge').toggle(
+                        isSelected);
                 });
             });
 
@@ -1045,9 +1049,9 @@
 
                 if (remainingImages.length) {
                     const selectedPrimary = Number($('#primary_image_id').val());
-                    const fallbackId = remainingImages.includes(selectedPrimary)
-                        ? selectedPrimary
-                        : remainingImages[0];
+                    const fallbackId = remainingImages.includes(selectedPrimary) ?
+                        selectedPrimary :
+                        remainingImages[0];
                     $('#primary_image_id').val(fallbackId);
 
                     $('.set-primary-image-btn').each(function() {
@@ -1055,7 +1059,8 @@
                         $(this).text(isSelected ? 'Utama' : 'Jadikan utama');
                         $(this).toggleClass('btn-primary', isSelected);
                         $(this).toggleClass('btn-outline-primary', !isSelected);
-                        $(this).closest('.image-preview-wrapper').find('.primary-badge').toggle(isSelected);
+                        $(this).closest('.image-preview-wrapper').find('.primary-badge').toggle(
+                            isSelected);
                     });
                 } else {
                     $('#primary_image_id').val('');
