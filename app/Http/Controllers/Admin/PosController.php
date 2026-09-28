@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Domain\Companies\Services\CompanyContext;
+use App\Domain\Companies\Services\CompanyPdfBrandingService;
 use App\Domain\Pos\Queries\PosSessionQuery;
 use App\Domain\Pos\Services\PosSaleService;
 use App\Http\Controllers\Controller;
@@ -55,6 +57,72 @@ class PosController extends Controller
         return response()->json(['products' => $products]);
     }
 
+    public function history(Request $request, CompanyContext $company, PosSessionQuery $sessions): JsonResponse
+    {
+        $activeSession = $sessions->activeSession((int) $request->user()->id);
+        $sales = PosSale::query()
+            ->where('company_id', $company->id())
+            ->where('cashier_id', $request->user()->id)
+            ->with([
+                'session:id,number,status',
+                'voider:id,name',
+                'items.product:id,code,name,unit_id',
+                'items.product.unit:id,name,symbol',
+            ])
+            ->orderByDesc('sold_at')
+            ->limit(50)
+            ->get();
+
+        return response()->json($sales->map(fn (PosSale $sale) => [
+            'id' => $sale->id,
+            'number' => $sale->number,
+            'sold_at' => $sale->sold_at?->format('d/m/Y H:i'),
+            'total' => (float) $sale->total_amount,
+            'payment_method' => $sale->payment_method,
+            'session' => $sale->session?->number ?? '—',
+            'status' => $sale->status,
+            'void_reason' => $sale->void_reason,
+            'voided_by' => $sale->voider?->name,
+            'voided_at' => $sale->voided_at?->format('d/m/Y H:i'),
+            'receipt_url' => route('super.pos.receipt', $sale),
+            'void_url' => route('super.pos.void', $sale),
+            'can_void' => $sale->status === 'completed'
+                && $activeSession?->id === $sale->pos_session_id
+                && $sale->session?->status === 'open',
+            'items' => $sale->items->map(fn ($item) => [
+                'name' => $item->product?->name ?? 'Barang dihapus',
+                'quantity' => (float) $item->quantity,
+                'unit' => $item->product?->unit?->symbol ?: $item->product?->unit?->name ?: '',
+            ])->values(),
+        ])->values());
+    }
+
+    public function receipt(Request $request, PosSale $posSale, CompanyContext $company, CompanyPdfBrandingService $branding): View
+    {
+        $sale = PosSale::query()
+            ->where('company_id', $company->id())
+            ->with([
+                'session:id,number',
+                'cashier:id,name',
+                'customer:id,code,name',
+                'voider:id,name',
+                'items.product:id,code,name,unit_id',
+                'items.product.unit:id,name,symbol',
+            ])
+            ->findOrFail($posSale->id);
+
+        abort_unless(
+            (int) $sale->cashier_id === (int) $request->user()->id || $request->user()->can('sales-report.view'),
+            403,
+        );
+
+        return view('super.pos.receipt', [
+            ...$branding->data(),
+            'sale' => $sale,
+            'autoPrint' => $request->boolean('autoprint'),
+        ]);
+    }
+
     public function checkout(Request $request, PosSaleService $service): JsonResponse
     {
         $data = $request->validate([
@@ -77,6 +145,7 @@ class PosController extends Controller
             'total' => (float) $sale->total_amount,
             'change' => (float) $sale->change_amount,
             'void_url' => route('super.pos.void', $sale),
+            'receipt_url' => route('super.pos.receipt', $sale),
         ], 201);
     }
 
@@ -89,7 +158,6 @@ class PosController extends Controller
             $posSale,
             $data['reason'],
             (int) $request->user()->id,
-            $request->user()->can('pos.void-closed-session'),
         );
 
         return response()->json([

@@ -516,6 +516,8 @@ Route::middleware(['auth'])
         Route::prefix('pos')->name('pos.')->group(function () {
             Route::middleware('permission:pos.view')->get('/', [PosController::class, 'index'])->name('index');
             Route::middleware('permission:pos.view')->get('/products', [PosController::class, 'products'])->name('products');
+            Route::middleware('permission:pos.view')->get('/sales/history', [PosController::class, 'history'])->name('history');
+            Route::middleware('permission:pos.view')->get('/sales/{posSale}/receipt', [PosController::class, 'receipt'])->name('receipt');
             Route::middleware('permission:pos.sell')->post('/checkout', [PosController::class, 'checkout'])->name('checkout');
             Route::middleware('permission:pos.void')->put('/sales/{posSale}/void', [PosController::class, 'void'])->name('void');
         });

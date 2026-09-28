@@ -14,21 +14,28 @@ class PosVoidAccessSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $permissions = collect(['void', 'void-closed-session'])->map(function (string $action) {
-            $permission = Permission::firstOrCreate([
-                'name' => "pos.{$action}",
-                'guard_name' => 'web',
-            ]);
-            if (Schema::hasColumn($permission->getTable(), 'group_name') && $permission->group_name !== 'pos') {
-                $permission->group_name = 'pos';
-                $permission->save();
-            }
-
-            return $permission;
-        });
+        $permission = Permission::firstOrCreate([
+            'name' => 'pos.void',
+            'guard_name' => 'web',
+        ]);
+        if (Schema::hasColumn($permission->getTable(), 'group_name') && $permission->group_name !== 'pos') {
+            $permission->group_name = 'pos';
+            $permission->save();
+        }
+        $closedSessionPermission = Permission::query()
+            ->where('guard_name', 'web')
+            ->where('name', 'pos.void-closed-session')
+            ->first();
 
         Role::query()->where('guard_name', 'web')->whereIn('name', ['admin', 'super_admin'])
-            ->get()->each(fn(Role $role) => $role->givePermissionTo($permissions));
+            ->get()->each(function (Role $role) use ($permission, $closedSessionPermission) {
+                $role->givePermissionTo($permission);
+                if ($closedSessionPermission) {
+                    $role->revokePermissionTo($closedSessionPermission);
+                }
+            });
+
+        $closedSessionPermission?->delete();
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
     }

@@ -13,8 +13,8 @@ class PosSaleService
     {
         return ($this->create)($data, $userId);
     }
-    public function void(PosSale $sale, string $reason, int $userId, bool $canVoidClosedSession): PosSale
+    public function void(PosSale $sale, string $reason, int $userId): PosSale
     {
-        return ($this->voidSale)($sale, $reason, $userId, $canVoidClosedSession);
+        return ($this->voidSale)($sale, $reason, $userId);
     }
 }

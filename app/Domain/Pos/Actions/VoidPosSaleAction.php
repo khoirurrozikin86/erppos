@@ -23,21 +23,20 @@ class VoidPosSaleAction
         private AuditLogService $auditLog,
     ) {}
 
-    public function __invoke(PosSale $sale, string $reason, int $userId, bool $canVoidClosedSession): PosSale
+    public function __invoke(PosSale $sale, string $reason, int $userId): PosSale
     {
-        return DB::transaction(function () use ($sale, $reason, $userId, $canVoidClosedSession) {
+        return DB::transaction(function () use ($sale, $reason, $userId) {
             $sale = PosSale::query()->where('company_id', $this->company->id())->lockForUpdate()->findOrFail($sale->id);
             if ($sale->status !== 'completed') {
                 throw ValidationException::withMessages(['sale' => 'Hanya transaksi POS selesai yang dapat di-void.']);
             }
 
             $session = PosSession::query()->where('company_id', $this->company->id())->lockForUpdate()->findOrFail($sale->pos_session_id);
-            if ($session->status === 'open') {
-                if ((int) $sale->cashier_id !== $userId && !$canVoidClosedSession) {
-                    throw ValidationException::withMessages(['sale' => 'Kasir hanya dapat void transaksi miliknya sendiri pada sesi yang masih terbuka.']);
-                }
-            } elseif (!$canVoidClosedSession) {
-                throw ValidationException::withMessages(['sale' => 'Void transaksi dari sesi yang sudah ditutup memerlukan hak supervisor.']);
+            if ($session->status !== 'open') {
+                throw ValidationException::withMessages(['sale' => 'Transaksi tidak dapat di-void setelah sesi kasir ditutup.']);
+            }
+            if ((int) $sale->cashier_id !== $userId) {
+                throw ValidationException::withMessages(['sale' => 'Kasir hanya dapat void transaksi miliknya sendiri.']);
             }
 
             $originalPayment = CashBankTransaction::query()
@@ -117,7 +116,7 @@ class VoidPosSaleAction
             $refund = CashBankTransaction::create([
                 'company_id' => $this->company->id(),
                 'cash_bank_account_id' => $cashAccount->id,
-                'pos_session_id' => $session->status === 'open' ? $session->id : null,
+                'pos_session_id' => $session->id,
                 'pos_sale_void_id' => $sale->id,
                 'transaction_date' => today(),
                 'direction' => 'out',

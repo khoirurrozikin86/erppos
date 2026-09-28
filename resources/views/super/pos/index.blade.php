@@ -7,10 +7,10 @@
             <div class="d-flex align-items-center gap-3"><a href="{{ route('super.dashboard') }}" class="pos-back-button"
                     title="Kembali"><i data-feather="arrow-left"></i></a><strong class="pos-brand">Kasir</strong><span
                     class="pos-order-tab">Order <b>{{ $session?->number ?? 'Baru' }}</b></span></div>
-            <div class="pos-header-actions"><label class="pos-search-box"><i data-feather="search"></i><input
+                <div class="pos-header-actions"><label class="pos-search-box"><i data-feather="search"></i><input
                         id="posProductSearch" type="search" placeholder="Cari nama, kode, atau barcode barang..."
                         {{ $session ? '' : 'disabled' }}></label><a href="{{ route('super.pos-sessions.index') }}"
-                    class="pos-session-link"><i data-feather="clock"></i><span>Sesi Kasir</span></a></div>
+                    class="pos-session-link"><i data-feather="clock"></i><span>Sesi Kasir</span></a><button type="button" id="posHistoryButton" class="pos-session-link btn btn-link p-0 text-decoration-none"><i data-feather="list"></i><span>Riwayat</span></button></div>
         </header>
         @if (!$session)
             <div class="alert alert-warning d-flex justify-content-between align-items-center m-3"><span>Belum ada sesi
@@ -92,6 +92,15 @@
                 </section>
             </main>
         @endif
+        <div class="modal fade" id="posHistoryModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+                <div class="modal-header"><div><h5 class="modal-title mb-0">Riwayat Transaksi Kasir</h5><small class="text-muted">Maksimal 50 transaksi terakhir milik Anda.</small></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button></div>
+                <div class="modal-body"><div class="table-responsive"><table class="table table-sm table-hover align-middle">
+                    <thead><tr><th>Transaksi</th><th>Tanggal / Sesi</th><th>Barang</th><th class="text-end">Total</th><th>Status</th><th class="text-end">Aksi</th></tr></thead>
+                    <tbody id="posHistoryRows"><tr><td colspan="6" class="text-center text-muted py-4">Memuat riwayat...</td></tr></tbody>
+                </table></div></div>
+            </div></div>
+        </div>
     </div>
 @endsection
 @push('scripts')
@@ -675,6 +684,31 @@
                 currency: 'IDR',
                 maximumFractionDigits: 2
             }).format(Number(value || 0));
+            const paymentLabel = { cash: 'Tunai', bank_transfer: 'Transfer', card: 'Kartu' };
+            const historyModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('posHistoryModal'));
+            const loadHistory = () => {
+                $('#posHistoryRows').html('<tr><td colspan="6" class="text-center text-muted py-4">Memuat riwayat...</td></tr>');
+                $.get(@json(route('super.pos.history'))).done(sales => {
+                    if (!sales.length) {
+                        $('#posHistoryRows').html('<tr><td colspan="6" class="text-center text-muted py-4">Belum ada transaksi.</td></tr>');
+                        return;
+                    }
+                    $('#posHistoryRows').html(sales.map(sale => {
+                        const status = sale.status === 'voided'
+                            ? `<span class="badge bg-danger">VOID</span><div class="small text-muted">${safe(sale.void_reason)}</div>`
+                            : '<span class="badge bg-success">Selesai</span>';
+                        const itemLines = sale.items.map(item => `${safe(item.name)} × ${item.quantity} ${safe(item.unit)}`).join('<br>');
+                        const actions = `<a class="btn btn-sm btn-outline-primary" href="${safe(sale.receipt_url)}?autoprint=1" target="_blank" rel="noopener" title="Cetak ulang nota"><i data-feather="printer" class="icon-sm"></i></a>`
+                            + (sale.can_void ? ` <button type="button" class="btn btn-sm btn-outline-danger btn-void-pos-sale" data-url="${safe(sale.void_url)}" data-number="${safe(sale.number)}" title="Void transaksi"><i data-feather="x-circle" class="icon-sm"></i></button>` : '');
+                        return `<tr><td class="fw-semibold">${safe(sale.number)}<div class="small text-muted">${paymentLabel[sale.payment_method] || safe(sale.payment_method)}</div></td><td>${safe(sale.sold_at)}<div class="small text-muted">${safe(sale.session)}</div></td><td><details><summary>${sale.items.length} item</summary><div class="small mt-1">${itemLines}</div></details></td><td class="text-end text-nowrap">${money(sale.total)}</td><td>${status}</td><td class="text-end text-nowrap">${actions}</td></tr>`;
+                    }).join(''));
+                    if (window.feather) feather.replace();
+                }).fail(xhr => {
+                    const message = xhr.responseJSON?.message || 'Riwayat transaksi tidak dapat dimuat.';
+                    $('#posHistoryRows').html(`<tr><td colspan="6" class="text-center text-danger py-4">${safe(message)}</td></tr>`);
+                });
+            };
+            $('#posHistoryButton').on('click', function() { historyModal.show(); loadHistory(); });
             const currentTotal = () => Number($('#posTotal').data('value') || 0);
             const refreshCashChange = () => {
                 if ($('#posPaymentMethod').val() !== 'cash') return;
@@ -854,6 +888,7 @@
                             title: 'Transaksi di-void',
                             text: result.value.message
                         });
+                        loadHistory();
                     }
                 });
             };
@@ -891,6 +926,7 @@
                     cancelButtonText: 'Periksa Lagi'
                 }).then(result => {
                     if (!result.isConfirmed) return;
+                    const receiptWindow = window.open('about:blank', '_blank');
                     const button = $('#posCheckout').prop('disabled', true);
                     $.ajax({
                             url: @json(route('super.pos.checkout')),
@@ -898,6 +934,7 @@
                             data: payload
                         })
                         .done(response => {
+                            if (receiptWindow) receiptWindow.location = `${response.receipt_url}?autoprint=1`;
                             cart.clear();
                             $('#posDiscountRate, #posCashReceived').val(0);
                             refreshCart();
@@ -905,7 +942,7 @@
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Penjualan Berhasil',
-                                html: `<strong>${safe(response.number)}</strong><br>Total ${money(response.total)}${response.change > 0 ? `<br>Kembalian ${money(response.change)}` : ''}`,
+                                html: `<strong>${safe(response.number)}</strong><br>Total ${money(response.total)}${response.change > 0 ? `<br>Kembalian ${money(response.change)}` : ''}${receiptWindow ? '<br><small>Nota siap dicetak.</small>' : '<br><small>Popup cetak diblokir browser. Cetak nota dari Riwayat.</small>'}`,
                                 showDenyButton: @json(auth()->user()->can('pos.void')),
                                 confirmButtonText: 'Selesai',
                                 denyButtonText: 'Void transaksi',
@@ -915,13 +952,16 @@
                                     response.number);
                             });
                         })
-                        .fail(xhr => Swal.fire({
+                        .fail(xhr => {
+                            receiptWindow?.close();
+                            Swal.fire({
                             icon: 'error',
                             title: 'Penjualan Gagal',
                             text: xhr.responseJSON?.message || Object.values(xhr
                                     .responseJSON?.errors || {}).flat()[0] ||
                                 'Transaksi tidak dapat disimpan.'
-                        }))
+                            });
+                        })
                         .always(() => button.prop('disabled', false));
                 });
             });

@@ -4,7 +4,10 @@ namespace Tests\Feature\Pos;
 
 use App\Domain\Accounting\Services\AutomaticJournalService;
 use App\Domain\Companies\Services\CompanyContext;
+use App\Domain\Companies\Services\CompanyPdfBrandingService;
+use App\Domain\Pos\Queries\PosSessionQuery;
 use App\Domain\Pos\Services\PosSaleService;
+use App\Http\Controllers\Admin\PosController;
 use App\Models\CashBankAccount;
 use App\Models\CashBankTransaction;
 use App\Models\Company;
@@ -17,6 +20,7 @@ use App\Models\ProductStock;
 use App\Models\StockMovement;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
@@ -67,30 +71,53 @@ class PosSaleVoidTest extends TestCase
         $this->assertSame(2, CashBankTransaction::query()->where('company_id', $company->id)->count());
     }
 
-    public function test_voiding_a_closed_session_requires_supervisor_and_does_not_rewrite_old_cash_close(): void
+    public function test_voiding_a_closed_session_is_rejected_for_every_user(): void
     {
         [$company, $cashier, $sale] = $this->createSaleFixture('closed');
         $this->actingAs($cashier);
         $service = app(PosSaleService::class);
 
         try {
-            $service->void($sale, 'Salah input', $cashier->id, false);
-            $this->fail('Voiding a closed session must require supervisor permission.');
+            $service->void($sale, 'Salah input', $cashier->id);
+            $this->fail('Voiding a closed session must be rejected.');
         } catch (ValidationException $exception) {
             $this->assertArrayHasKey('sale', $exception->errors());
         }
 
-        $voided = $service->void($sale, 'Disetujui supervisor', $cashier->id, true);
-        $refund = CashBankTransaction::query()->where('pos_sale_void_id', $sale->id)->firstOrFail();
-
-        $this->assertSame('voided', $voided->status);
-        $this->assertNull($refund->pos_session_id);
+        $this->assertSame('completed', $sale->fresh()->status);
+        $historyRequest = Request::create('/super/pos/sales/history', 'GET');
+        $historyRequest->setUserResolver(fn () => $cashier);
+        $history = app(PosController::class)->history($historyRequest, app(CompanyContext::class), app(PosSessionQuery::class))->getData(true);
+        $this->assertFalse($history[0]['can_void']);
+        $this->assertNotEmpty($history[0]['receipt_url']);
         $this->assertDatabaseHas('pos_sessions', [
             'id' => $sale->pos_session_id,
             'status' => 'closed',
             'expected_cash' => 200,
         ]);
-        $this->assertSame(1, CashBankTransaction::query()->where('company_id', $company->id)->where('direction', 'out')->count());
+        $this->assertSame(0, CashBankTransaction::query()->where('company_id', $company->id)->where('direction', 'out')->count());
+    }
+
+    public function test_cashier_history_exposes_reprint_and_void_only_for_the_open_session(): void
+    {
+        [$company, $cashier, $sale, $session] = $this->createSaleFixture('open');
+        $this->actingAs($cashier);
+        $controller = app(PosController::class);
+        $historyRequest = Request::create('/super/pos/sales/history', 'GET');
+        $historyRequest->setUserResolver(fn () => $cashier);
+
+        $history = $controller->history($historyRequest, app(CompanyContext::class), app(PosSessionQuery::class))->getData(true);
+
+        $this->assertCount(1, $history);
+        $this->assertSame($sale->number, $history[0]['number']);
+        $this->assertTrue($history[0]['can_void']);
+        $this->assertSame(route('super.pos.receipt', $sale), $history[0]['receipt_url']);
+
+        $receiptRequest = Request::create('/super/pos/sales/' . $sale->id . '/receipt', 'GET', ['autoprint' => '1']);
+        $receiptRequest->setUserResolver(fn () => $cashier);
+        $receipt = $controller->receipt($receiptRequest, $sale, app(CompanyContext::class), app(CompanyPdfBrandingService::class));
+        $this->assertSame('super.pos.receipt', $receipt->name());
+        $this->assertTrue($receipt->getData()['autoPrint']);
     }
 
     private function createSaleFixture(string $sessionStatus): array

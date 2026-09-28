@@ -8,7 +8,7 @@ Aplikasi ERP untuk mengelola data operasional, persediaan, pembelian, penjualan,
 - **Pembelian:** permintaan pembelian, purchase order, penerimaan barang, dan retur pembelian.
 - **Persediaan:** stok, kartu stok, stock opname, serta laporan persediaan.
 - **Penjualan:** quotation, sales order, pengiriman, invoice, customer return, dan piutang.
-- **POS:** sesi kasir, transaksi penjualan, void dengan refund, pengurangan stok, dan pencatatan biaya pokok.
+- **POS:** sesi kasir, riwayat transaksi, cetak/cetak ulang nota, void dengan refund, pengurangan stok, dan pencatatan biaya pokok.
 - **Laporan:** penjualan invoice dan POS, pembelian, persediaan, kas/bank, serta laba rugi.
 - **Keuangan dan akuntansi:** kas/bank, utang, akun, jurnal, dan laporan laba rugi.
 - **Administrasi:** dashboard, pengaturan, pengguna, role, permission, dan audit log.
@@ -39,7 +39,7 @@ Customer Return dibuat dari Sales Invoice yang sudah diterbitkan. Sistem membata
 
 ### 6. Void transaksi POS
 
-Void hanya berlaku untuk transaksi POS yang selesai dan memerlukan alasan. Kasir dapat void transaksi miliknya selama sesi masih terbuka. Void dari sesi yang sudah ditutup memerlukan hak supervisor. Sistem tidak menghapus struk: status, pelaku, waktu, dan alasan void disimpan; stok serta biaya pokok dipulihkan; refund keluar dicatat ke akun pembayaran asal; dan jurnal penjualan dibalik. Transaksi void tetap terlihat di laporan, tetapi tidak masuk total penjualan.
+Riwayat di halaman kasir menampilkan transaksi milik kasir, termasuk transaksi dari sesi sebelumnya untuk cetak ulang nota. Setelah checkout, nota thermal otomatis dibuka untuk dicetak; popup browser perlu diizinkan. Void memerlukan alasan dan hanya dapat dilakukan oleh kasir pemilik transaksi selama sesi masih terbuka. Setelah sesi ditutup, transaksi tidak dapat di-void. Sistem tidak menghapus struk: status, pelaku, waktu, dan alasan void disimpan; stok serta biaya pokok dipulihkan; refund keluar dicatat ke akun pembayaran asal; dan jurnal penjualan dibalik. Transaksi void tetap terlihat di laporan, tetapi tidak masuk total penjualan.
 
 ```text
 Master Barang

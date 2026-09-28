@@ -231,12 +231,7 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    @if (
-                                        $sale->status === 'completed' &&
-                                            (auth()->user()->can('pos.void-closed-session') ||
-                                                (auth()->user()->can('pos.void') &&
-                                                    $sale->session?->status === 'open' &&
-                                                    (int) $sale->cashier_id === (int) auth()->id())))
+                                    @if ($sale->status === 'completed' && auth()->user()->can('pos.void') && $sale->session?->status === 'open' && (int) $sale->cashier_id === (int) auth()->id())
                                         <button type="button" class="btn btn-sm btn-outline-danger btn-void-pos-sale"
                                             data-url="{{ route('super.pos.void', $sale) }}"
                                             data-number="{{ $sale->number }}" title="Void transaksi"><i
