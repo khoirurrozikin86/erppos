@@ -86,7 +86,7 @@ class PosSaleVoidTest extends TestCase
 
         $this->assertSame('completed', $sale->fresh()->status);
         $historyRequest = Request::create('/super/pos/sales/history', 'GET');
-        $historyRequest->setUserResolver(fn () => $cashier);
+        $historyRequest->setUserResolver(fn() => $cashier);
         $history = app(PosController::class)->history($historyRequest, app(CompanyContext::class), app(PosSessionQuery::class))->getData(true);
         $this->assertFalse($history[0]['can_void']);
         $this->assertNotEmpty($history[0]['receipt_url']);
@@ -104,7 +104,7 @@ class PosSaleVoidTest extends TestCase
         $this->actingAs($cashier);
         $controller = app(PosController::class);
         $historyRequest = Request::create('/super/pos/sales/history', 'GET');
-        $historyRequest->setUserResolver(fn () => $cashier);
+        $historyRequest->setUserResolver(fn() => $cashier);
 
         $history = $controller->history($historyRequest, app(CompanyContext::class), app(PosSessionQuery::class))->getData(true);
 
@@ -114,7 +114,7 @@ class PosSaleVoidTest extends TestCase
         $this->assertSame(route('super.pos.receipt', $sale), $history[0]['receipt_url']);
 
         $receiptRequest = Request::create('/super/pos/sales/' . $sale->id . '/receipt', 'GET', ['autoprint' => '1']);
-        $receiptRequest->setUserResolver(fn () => $cashier);
+        $receiptRequest->setUserResolver(fn() => $cashier);
         $receipt = $controller->receipt($receiptRequest, $sale, app(CompanyContext::class), app(CompanyPdfBrandingService::class));
         $this->assertSame('super.pos.receipt', $receipt->name());
         $this->assertTrue($receipt->getData()['autoPrint']);

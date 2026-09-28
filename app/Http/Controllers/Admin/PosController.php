@@ -73,7 +73,7 @@ class PosController extends Controller
             ->limit(50)
             ->get();
 
-        return response()->json($sales->map(fn (PosSale $sale) => [
+        return response()->json($sales->map(fn(PosSale $sale) => [
             'id' => $sale->id,
             'number' => $sale->number,
             'sold_at' => $sale->sold_at?->format('d/m/Y H:i'),
@@ -89,7 +89,7 @@ class PosController extends Controller
             'can_void' => $sale->status === 'completed'
                 && $activeSession?->id === $sale->pos_session_id
                 && $sale->session?->status === 'open',
-            'items' => $sale->items->map(fn ($item) => [
+            'items' => $sale->items->map(fn($item) => [
                 'name' => $item->product?->name ?? 'Barang dihapus',
                 'quantity' => (float) $item->quantity,
                 'unit' => $item->product?->unit?->symbol ?: $item->product?->unit?->name ?: '',
